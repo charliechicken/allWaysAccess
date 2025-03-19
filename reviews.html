@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility Reviews - AllWaysAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #34495e;
+            --secondary: #7f8c8d;
+            --accent: #3498db;
+            --background: #f8f9fa;
+            --text: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        .review-card {
+            border-left: 4px solid var(--accent);
+            transition: transform 0.2s;
+        }
+        
+        .review-card:hover {
+            transform: translateX(4px);
+        }
+        
+        .highlighted {
+            background-color: rgba(52, 152, 219, 0.1);
+            padding: 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header matching search.html -->
+        <header class="mb-8">
+            <div class="logo mb-4 flex items-center gap-4">
+                <img src="logo.png" alt="AllWaysAccess Logo" class="w-12 h-12 object-contain">
+                <span class="text-2xl font-bold">AllWaysAccess</span>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="search.html" class="text-blue-600 hover:text-blue-800">← Back to Search</a>
+            </nav>
+        </header>
+
+        <main>
+            <div id="place-info" class="mb-8">
+                <h1 id="place-name" class="text-3xl font-bold mb-2">Loading...</h1>
+                <p id="place-address" class="text-gray-600"></p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="mb-6 flex flex-wrap gap-2">
+                <button id="all-reviews-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring">
+                    All Reviews
+                </button>
+                <button id="accessibility-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring">
+                    Accessibility Reviews
+                </button>
+                <button id="entrance-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring">
+                    Entrance Access
+                </button>
+                <button id="bathroom-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring">
+                    Bathroom Access
+                </button>
+                <button id="parking-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring">
+                    Parking
+                </button>
+            </div>
+
+            <!-- Add Review Form -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h2 class="text-xl font-bold mb-4">Add Your Review</h2>
+                <form id="review-form" class="space-y-4">
+                    <div>
+                        <label class="block mb-2">Rating</label>
+                        <div class="flex gap-2">
+                            <input type="radio" name="rating" value="1" id="rating-1" required> <label for="rating-1">1</label>
+                            <input type="radio" name="rating" value="2" id="rating-2"> <label for="rating-2">2</label>
+                            <input type="radio" name="rating" value="3" id="rating-3"> <label for="rating-3">3</label>
+                            <input type="radio" name="rating" value="4" id="rating-4"> <label for="rating-4">4</label>
+                            <input type="radio" name="rating" value="5" id="rating-5"> <label for="rating-5">5</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="review-text" class="block mb-2">Your Review</label>
+                        <textarea 
+                            id="review-text"
+                            name="review" 
+                            class="w-full p-2 border rounded"
+                            rows="4"
+                            required
+                            placeholder="Please include any accessibility-related information (wheelchair access, bathroom accessibility, etc.)..."
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+
+            <div id="reviews-container" class="space-y-4">
+                <!-- Reviews will be inserted here -->
+                <div class="text-center py-8" id="loading-indicator">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                    <p class="mt-2">Loading reviews...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Accessibility-related keywords to highlight and filter by
+        const ACCESSIBILITY_KEYWORDS = {
+            general: ['accessible', 'accessibility', 'wheelchair', 'disability', 'disabled', 'mobility', 'ada'],
+            entrance: ['entrance', 'door', 'doorway', 'ramp', 'steps', 'threshold'],
+            bathroom: ['bathroom', 'restroom', 'toilet', 'stall', 'sink'],
+            parking: ['parking', 'spot', 'space', 'handicap']
+        };
+
+        // Example reviews data - would normally come from server
+        const EXAMPLE_REVIEWS = [
+            {
+                userName: "John D.",
+                rating: 4,
+                text: "Great wheelchair accessibility at the entrance. The ramp is well-maintained and easy to use.",
+                date: "2024-01-15"
+            },
+            {
+                userName: "Sarah M.",
+                rating: 5,
+                text: "Excellent accessible parking spots close to the entrance. Wide doorways throughout.",
+                date: "2024-01-10"
+            },
+            {
+                userName: "Mike T.",
+                rating: 3,
+                text: "Food was good, but the bathroom isn't very accessible. Toilet stall is too narrow for wheelchairs.",
+                date: "2024-02-05"
+            },
+            {
+                userName: "Emma R.",
+                rating: 4,
+                text: "Staff was extremely helpful in accommodating my mobility needs. Would visit again!",
+                date: "2024-02-12"
+            },
+            {
+                userName: "Carlos P.",
+                rating: 2,
+                text: "Had to go up three steps to enter. No ramp available. They need to improve accessibility.",
+                date: "2024-01-22"
+            }
+        ];
+
+        function highlightAccessibilityTerms(text) {
+            let result = text;
+            
+            // Combine all keywords
+            const allKeywords = [
+                ...ACCESSIBILITY_KEYWORDS.general,
+                ...ACCESSIBILITY_KEYWORDS.entrance,
+                ...ACCESSIBILITY_KEYWORDS.bathroom,
+                ...ACCESSIBILITY_KEYWORDS.parking
+            ];
+            
+            // Create a regex that matches any of the keywords
+            const regex = new RegExp(`\\b(${allKeywords.join('|')})\\b`, 'gi');
+            
+            // Replace matching keywords with highlighted version
+            return result.replace(regex, '<span class="highlighted">$1</span>');
+        }
+
+        function createReviewCard(review) {
+            const highlightedText = highlightAccessibilityTerms(review.text);
+            
+            // Check for accessibility terms to add classes for filtering
+            const hasAccessibilityTerms = ACCESSIBILITY_KEYWORDS.general.some(term => 
+                review.text.toLowerCase().includes(term.toLowerCase())
+            );
+            
+            const hasEntranceTerms = ACCESSIBILITY_KEYWORDS.entrance.some(term => 
+                review.text.toLowerCase().includes(term.toLowerCase())
+            );
+            
+            const hasBathroomTerms = ACCESSIBILITY_KEYWORDS.bathroom.some(term => 
+                review.text.toLowerCase().includes(term.toLowerCase())
+            );
+            
+            const hasParkingTerms = ACCESSIBILITY_KEYWORDS.parking.some(term => 
+                review.text.toLowerCase().includes(term.toLowerCase())
+            );
+            
+            // Build classes string based on content
+            let classes = 'review-card bg-white p-4 rounded-lg shadow';
+            if (hasAccessibilityTerms) classes += ' has-accessibility';
+            if (hasEntranceTerms) classes += ' has-entrance';
+            if (hasBathroomTerms) classes += ' has-bathroom';
+            if (hasParkingTerms) classes += ' has-parking';
+            
+            const div = document.createElement('div');
+            div.className = classes;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="font-semibold">${review.userName}</div>
+                        <div class="text-sm text-gray-500">${review.date}</div>
+                    </div>
+                    <div class="text-yellow-400">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                </div>
+                <p class="text-gray-700">${highlightedText}</p>
+            `;
+            return div;
+        }
+
+        function attachFilterListeners() {
+            document.getElementById('all-reviews-btn').addEventListener('click', function() {
+                setActiveButton(this);
+                document.querySelectorAll('.review-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+            });
+            
+            document.getElementById('accessibility-btn').addEventListener('click', function() {
+                setActiveButton(this);
+                document.querySelectorAll('.review-card').forEach(card => {
+                    card.style.display = card.classList.contains('has-accessibility') ? 'block' : 'none';
+                });
+            });
+            
+            document.getElementById('entrance-btn').addEventListener('click', function() {
+                setActiveButton(this);
+                document.querySelectorAll('.review-card').forEach(card => {
+                    card.style.display = card.classList.contains('has-entrance') ? 'block' : 'none';
+                });
+            });
+            
+            document.getElementById('bathroom-btn').addEventListener('click', function() {
+                setActiveButton(this);
+                document.querySelectorAll('.review-card').forEach(card => {
+                    card.style.display = card.classList.contains('has-bathroom') ? 'block' : 'none';
+                });
+            });
+            
+            document.getElementById('parking-btn').addEventListener('click', function() {
+                setActiveButton(this);
+                document.querySelectorAll('.review-card').forEach(card => {
+                    card.style.display = card.classList.contains('has-parking') ? 'block' : 'none';
+                });
+            });
+        }
+
+        function setActiveButton(button) {
+            // Reset all buttons
+            document.querySelectorAll('.mb-6 button').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-800');
+            });
+            
+            // Set active button
+            button.classList.remove('bg-gray-200', 'text-gray-800');
+            button.classList.add('bg-blue-600', 'text-white');
+        }
+
+        async function fetchReviews(placeId) {
+            try {
+                const response = await fetch(`/api/reviews?placeId=${placeId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch reviews');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+                return []; // Return empty array if fetch fails
+            }
+        }
+
+        async function submitReview(review) {
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(review)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to submit review');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert('Failed to submit review. Please try again.');
+                return null;
+            }
+        }
+
+        async function loadAndDisplayReviews() {
+            const container = document.getElementById('reviews-container');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            const savedPlace = localStorage.getItem('selectedPlace');
+            
+            if (!savedPlace) {
+                loadingIndicator.innerHTML = '<p>No place selected. Please return to search.</p>';
+                return;
+            }
+            
+            const placeData = JSON.parse(savedPlace);
+            document.getElementById('place-name').textContent = placeData.name;
+            document.getElementById('place-address').textContent = placeData.address;
+            
+            try {
+                // Fetch real reviews from server
+                const serverReviews = await fetchReviews(placeData.placeId);
+                
+                // Combine with example reviews for now
+                const allReviews = [...serverReviews, ...EXAMPLE_REVIEWS]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Remove loading indicator
+                loadingIndicator.remove();
+                
+                // Display reviews
+                if (allReviews.length === 0) {
+                    container.innerHTML = '<p class="text-center py-4">No reviews yet. Be the first to add one!</p>';
+                } else {
+                    allReviews.forEach(review => {
+                        container.appendChild(createReviewCard(review));
+                    });
+                }
+            } catch (error) {
+                loadingIndicator.innerHTML = '<p>Error loading reviews. Please try again.</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAndDisplayReviews();
+            attachFilterListeners();
+            
+            // Handle new review submission
+            document.getElementById('review-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const savedPlace = localStorage.getItem('selectedPlace');
+                if (!savedPlace) {
+                    alert('No place selected. Please return to search.');
+                    return;
+                }
+                
+                const placeData = JSON.parse(savedPlace);
+                const formData = new FormData(e.target);
+                
+                const review = {
+                    placeId: placeData.placeId,
+                    rating: parseInt(formData.get('rating')),
+                    text: formData.get('review'),
+                    userName: "Anonymous User", // Could add user authentication later
+                    date: new Date().toISOString().split('T')[0]
+                };
+                
+                const result = await submitReview(review);
+                if (result) {
+                    // Clear form
+                    e.target.reset();
+                    
+                    // Reload reviews
+                    document.getElementById('reviews-container').innerHTML = `
+                        <div class="text-center py-8" id="loading-indicator">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                            <p class="mt-2">Loading reviews...</p>
+                        </div>
+                    `;
+                    loadAndDisplayReviews();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

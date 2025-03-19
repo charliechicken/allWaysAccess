@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllWaysAccess - Welcome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #34495e;
+            --secondary: #7f8c8d;
+            --accent: #3498db;
+            --background: #f8f9fa;
+            --text: #2c3e50;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100%;
+            overflow-x: hidden;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .parallax-container {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .content-wrapper {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .hero-section {
+            height: 100vh;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .team-section-wrapper {
+            position: relative;
+            z-index: 2;
+            margin-top: 100vh;
+            background-color: var(--background);
+            padding: 4rem 0;
+        }
+
+        .max-w-7xl {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        main {
+            height: calc(100vh - 120px); /* Account for header */
+            display: flex;
+            align-items: center;
+        }
+
+        .parallax-content {
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hero-text {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .hero-image {
+            opacity: 0;
+            transform: translateX(20px);
+            animation: fadeInRight 0.8s ease forwards 0.3s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: blobFloat 20s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            background: rgba(52, 152, 219, 0.3);
+            width: 40vw;
+            height: 40vw;
+            top: -10vh;
+            left: -10vw;
+        }
+
+        .blob-2 {
+            background: rgba(46, 204, 113, 0.2);
+            width: 30vw;
+            height: 30vw;
+            bottom: -5vh;
+            right: -5vw;
+        }
+
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 50px) scale(1.1); }
+            50% { transform: translate(0, 100px) scale(0.9); }
+            75% { transform: translate(-50px, 50px) scale(1.05); }
+        }
+
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .team-section {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            margin-top: 4rem;
+        }
+
+        .team-member {
+            padding: 2rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .number {
+            background: linear-gradient(135deg, #ff4b1f 0%, #ff9068 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 5rem;
+            line-height: 1;
+        }
+
+        :root.dark-mode .team-section {
+            background-color: rgba(26, 26, 26, 0.9);
+        }
+
+        :root.dark-mode .team-member {
+            background: #2d2d2d;
+        }
+
+        :root.high-contrast .team-member {
+            border: 2px solid var(--text);
+        }
+
+        /* Add smooth scroll button */
+        .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            z-index: 10;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="parallax-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="gradient-bg"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <header class="mb-8">
+                    <div class="logo mb-4 flex items-center gap-4 floating">
+                        <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-16 h-16 object-contain">
+                        <span class="text-4xl">AllWaysAccess</span>
+                    </div>
+                </header>
+
+                <main class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                    <div class="w-full md:w-1/2 space-y-6 hero-text">
+                        <h1 class="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">
+                            Experience Places Before You Visit
+                        </h1>
+                        <p class="text-xl text-gray-600">
+                            Virtual tours of Tampa/Clearwater businesses at your fingertips
+                        </p>
+                        <div class="flex gap-4">
+                            <button onclick="showModal('signup')" class="btn px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Sign Up
+                            </button>
+                            <button onclick="showModal('login')" class="btn px-8 py-4 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 hero-image">
+                        <div class="card-hover">
+                            <img 
+                                src="kennedy.png" 
+                                alt="Demo of AllWaysAccess interface" 
+                                class="rounded-lg shadow-xl border-4 border-blue-100 hover:border-blue-500 transition-colors duration-300"
+                            >
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div class="team-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <h2 class="text-4xl font-bold text-center mb-12">Meet Our Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Team Member 1 -->
+                <div class="team-member text-center">
+                    <div class="number text-8xl font-bold text-red-500 mb-4">01</div>
+                    <h3 class="text-2xl font-semibold mb-2">Jared</h3>
+                    <p class="text-gray-600 mb-4">Full Stack Developer</p>
+                    <p class="text-sm text-gray-500">Specializing in frontend development and user experience design.</p>
+                </div>
+
+                <!-- Team Member 2 -->
+                <div class="team-member text-center">
+                    <div class="number text-8xl font-bold text-red-500 mb-4">02</div>
+                    <h3 class="text-2xl font-semibold mb-2">Kris</h3>
+                    <p class="text-gray-600 mb-4">Backend Engineer</p>
+                    <p class="text-sm text-gray-500">Expert in database architecture and API development.</p>
+                </div>
+
+                <!-- Team Member 3 -->
+                <div class="team-member text-center">
+                    <div class="number text-8xl font-bold text-red-500 mb-4">03</div>
+                    <h3 class="text-2xl font-semibold mb-2">Javier</h3>
+                    <p class="text-gray-600 mb-4">UI/UX Designer</p>
+                    <p class="text-sm text-gray-500">Creating intuitive and accessible user interfaces.</p>
+                </div>
+
+                <!-- Team Member 4 -->
+                <div class="team-member text-center">
+                    <div class="number text-8xl font-bold text-red-500 mb-4">04</div>
+                    <h3 class="text-2xl font-semibold mb-2">Zach</h3>
+                    <p class="text-gray-600 mb-4">DevOps Engineer</p>
+                    <p class="text-sm text-gray-500">Managing deployment and infrastructure optimization.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+            <div id="signup-form" class="hidden">
+                <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
+                <form onsubmit="return handleAuth(event, 'signup')">
+                    <input type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
+                    <input type="password" placeholder="Password" class="w-full p-2 border rounded mb-3">
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+            <div id="login-form" class="hidden">
+                <h2 class="text-2xl font-bold mb-4">Login</h2>
+                <form onsubmit="return handleAuth(event, 'login')">
+                    <input type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
+                    <input type="password" placeholder="Password" class="w-full p-2 border rounded mb-3">
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                        Login
+                    </button>
+                </form>
+            </div>
+            <button onclick="hideModal()" class="mt-4 text-gray-600 hover:text-gray-800">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function showModal(type) {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById(`${type}-form`).classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function handleAuth(event, type) {
+            event.preventDefault();
+            // Redirect to the main app page regardless of input
+            window.location.href = 'search.html';
+            return false;
+        }
+
+        // Add parallax effect
+        document.addEventListener('mousemove', (e) => {
+            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+            
+            document.querySelector('.parallax-content').style.transform = 
+                `translateX(${moveX}px) translateY(${moveY}px)`;
+        });
+    </script>
+</body>
+</html> 

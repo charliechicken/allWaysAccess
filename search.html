@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllWaysAccess - Search Location</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #34495e;
+            --secondary: #7f8c8d;
+            --accent: #3498db;
+            --background: #f8f9fa;
+            --text: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.15);
+            outline: none;
+        }
+        
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+        
+        .btn:hover:after {
+            transform: translateX(0);
+        }
+        
+        /* Decorative elements */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: 1;
+        }
+        
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            top: -200px;
+            right: -100px;
+            animation: blob-float 15s infinite alternate ease-in-out;
+        }
+        
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            bottom: -100px;
+            left: -150px;
+            animation: blob-float 18s infinite alternate-reverse ease-in-out;
+        }
+        
+        @keyframes blob-float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(50px, 50px) rotate(10deg);
+            }
+            66% {
+                transform: translate(-20px, 30px) rotate(-5deg);
+            }
+            100% {
+                transform: translate(10px, -40px) rotate(3deg);
+            }
+        }
+        
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.2) 50%,
+                rgba(255,255,255,0) 100%
+            );
+            z-index: 10;
+            animation: shimmer 2s infinite;
+            transform: translateX(-100%);
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Decorative blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <header class="mb-8">
+            <div class="logo mb-4 flex items-center gap-4">
+                    <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-12 h-12 object-contain">
+                
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">AllWaysAccess</span>
+            </div>
+        </header>
+
+        <main class="max-w-2xl mx-auto">
+            <div class="card p-8">
+                <h1 class="text-3xl font-bold mb-2" style="color: var(--primary)">Find a Location</h1>
+                <p class="text-gray-600 mb-6">Discover accessibility features at restaurants and businesses</p>
+                
+                <div class="space-y-6">
+                    <div class="relative shimmer">
+                        <input 
+                            type="text" 
+                            id="location-input"
+                            placeholder="Search for businesses in Tampa/Clearwater..."
+                            class="search-input"
+                        >
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div id="place-details" class="hidden space-y-4 mt-6">
+                        <div class="p-4 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg">
+                            <h2 id="place-name" class="text-xl font-semibold text-blue-800"></h2>
+                            <p id="place-address" class="text-blue-600"></p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                            <a href="index.html" class="btn bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg text-center hover:from-blue-700 hover:to-blue-800 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                    </svg>
+                                    3D & Street View
+                                </span>
+                            </a>
+                            <a href="virtual-tour.html" class="btn bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg text-center hover:from-green-600 hover:to-green-700 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Virtual Tour
+                                </span>
+                            </a>
+                            <a href="reviews.html" class="btn bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-lg text-center hover:from-purple-600 hover:to-purple-700 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                    </svg>
+                                    Read Reviews
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional feature suggestions -->
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="font-medium">Verified Locations</h3>
+                    <p class="text-sm text-gray-600">Places with verified accessibility features</p>
+                </div>
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                    </svg>
+                    <h3 class="font-medium">Community Reviews</h3>
+                    <p class="text-sm text-gray-600">Real accessibility experiences shared</p>
+                </div>
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-purple-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="font-medium">Real-Time Updates</h3>
+                    <p class="text-sm text-gray-600">Latest information on accessibility features</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let autocomplete;
+
+        function initializeGoogleMaps() {
+            // Load Google Maps script dynamically
+            const script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB-44bMn47nLkyaDp_oADjQvAa_5vWz7uI&libraries=places';
+            script.async = true;
+            script.defer = true;
+            
+            script.onload = () => {
+                // Wait a brief moment before initializing
+                setTimeout(initAutocomplete, 500);
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function initAutocomplete() {
+            const input = document.getElementById('location-input');
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(27.7089, -82.8458),
+                    new google.maps.LatLng(28.0889, -82.4458)
+                ),
+                types: ['establishment'],
+                componentRestrictions: { country: 'us' },
+                fields: ['name', 'geometry', 'formatted_address']
+            });
+
+            autocomplete.addListener('place_changed', handlePlaceSelection);
+        }
+
+        function handlePlaceSelection() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                alert("No location found for: " + place.name);
+                return;
+            }
+
+            const placeData = {
+                name: place.name,
+                address: place.formatted_address,
+                location: {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                },
+                timestamp: new Date().getTime()
+            };
+            
+            localStorage.setItem('selectedPlace', JSON.stringify(placeData));
+            showPlaceDetails(placeData);
+        }
+
+        function showPlaceDetails(placeData) {
+            const detailsDiv = document.getElementById('place-details');
+            const nameEl = document.getElementById('place-name');
+            const addressEl = document.getElementById('place-address');
+            
+            detailsDiv.classList.remove('hidden');
+            nameEl.textContent = placeData.name;
+            addressEl.textContent = placeData.address;
+            
+            document.getElementById('location-input').value = placeData.name;
+        }
+
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delay Google Maps initialization
+            setTimeout(initializeGoogleMaps, 1000);
+            
+            // Restore previous search if exists
+            const savedPlace = localStorage.getItem('selectedPlace');
+            if (savedPlace) {
+                showPlaceDetails(JSON.parse(savedPlace));
+            }
+        });
+    </script>
+</body>
+</html> 

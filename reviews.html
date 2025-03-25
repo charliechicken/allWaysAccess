@@ -343,9 +343,16 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAndDisplayReviews();
-            attachFilterListeners();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load Google Maps & Places API
+            loadGooglePlacesAPI();
+            
+            // Set up sample places
+            setupSamplePlaces();
+            
+            // Initialize existing functionality
+            initializeFilters();
+            setupReviewForm();
             
             // Handle new review submission
             document.getElementById('review-form').addEventListener('submit', async (e) => {
@@ -384,6 +391,628 @@
                 }
             });
         });
+
+        // Function to load Google Places API
+        function loadGooglePlacesAPI() {
+            const script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB-44bMn47nLkyaDp_oADjQvAa_5vWz7uI&libraries=places&callback=onGooglePlacesLoaded';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+
+        // Callback when Google Places API is loaded
+        window.onGooglePlacesLoaded = function() {
+            console.log('Google Places API loaded');
+            // This will be called when the API is ready
+        };
+
+        // Set up sample places dropdown
+        function setupSamplePlaces() {
+            // Add place selector to the top of the page
+            const placeSelector = document.createElement('div');
+            placeSelector.className = 'mb-6 bg-white p-4 rounded-lg shadow';
+            placeSelector.innerHTML = `
+                <label for="place-selector" class="block text-sm font-medium text-gray-700 mb-2">Select a place to view accessibility reviews:</label>
+                <div class="relative">
+                    <select id="place-selector" class="w-full px-4 py-2 pr-8 border rounded appearance-none">
+                        <option value="">-- Select a place --</option>
+                        <option value="Belchers_Farmers_Market">Belcher's Farmer's Market</option>
+                        <option value="Thai_Bay_Restaurant">Thai Bay Restaurant</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </div>
+                </div>
+            `;
+            
+            // Find the filter container to insert before
+            const filterContainer = document.querySelector('.mb-6.flex.flex-wrap.gap-2');
+            if (filterContainer && filterContainer.parentNode) {
+                filterContainer.parentNode.insertBefore(placeSelector, filterContainer);
+            } else {
+                // If can't find filter container, insert at beginning of main
+                const mainContainer = document.querySelector('main');
+                if (mainContainer) {
+                    const firstChild = mainContainer.firstChild;
+                    if (firstChild) {
+                        mainContainer.insertBefore(placeSelector, firstChild);
+                    } else {
+                        mainContainer.appendChild(placeSelector);
+                    }
+                }
+            }
+            
+            // Add event listener for place selection with delay to ensure DOM is ready
+            setTimeout(() => {
+                const placeSelector = document.getElementById('place-selector');
+                if (placeSelector) {
+                    placeSelector.addEventListener('change', function() {
+                        const placeId = this.value;
+                        if (placeId) {
+                            fetchPlaceReviews(placeId);
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // Add keyword search input to the filter container
+        function enhanceFilterUI() {
+            // Create a filter container div if it doesn't exist
+            let filterContainer = document.querySelector('.filter-container');
+            if (!filterContainer) {
+                // Get the existing filter buttons container (the div with buttons)
+                filterContainer = document.querySelector('.mb-6.flex.flex-wrap.gap-2');
+                // Add the filter-container class to it
+                if (filterContainer) {
+                    filterContainer.classList.add('filter-container');
+                } else {
+                    // If still not found, create a new container before the reviews
+                    filterContainer = document.createElement('div');
+                    filterContainer.className = 'filter-container mb-6 flex flex-wrap gap-2';
+                    const reviewsContainer = document.getElementById('reviews-container');
+                    if (reviewsContainer && reviewsContainer.parentNode) {
+                        reviewsContainer.parentNode.insertBefore(filterContainer, reviewsContainer);
+                    }
+                }
+            }
+            
+            if (!filterContainer) {
+                console.error('Could not find or create filter container');
+                return;
+            }
+            
+            const keywordSearch = document.createElement('div');
+            keywordSearch.className = 'w-full mb-4';
+            keywordSearch.innerHTML = `
+                <label for="accessibility-keyword" class="block text-sm font-medium text-gray-700 mb-2">Filter by accessibility keyword:</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="accessibility-keyword" class="form-input flex-1 px-4 py-2 border rounded" placeholder="e.g., ramp, elevator, bathroom">
+                    <button id="search-keyword" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700">
+                        Search
+                    </button>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-2" id="suggested-keywords">
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">ramp</span>
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">elevator</span>
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">parking</span>
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">bathroom</span>
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">doorway</span>
+                    <span class="cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">steps</span>
+                </div>
+            `;
+            
+            filterContainer.insertBefore(keywordSearch, filterContainer.firstChild);
+            
+            // Add event listeners for keyword suggestions
+            setTimeout(() => {
+                const suggestedKeywords = document.querySelectorAll('#suggested-keywords span');
+                if (suggestedKeywords.length > 0) {
+                    suggestedKeywords.forEach(keyword => {
+                        keyword.addEventListener('click', function() {
+                            const keywordInput = document.getElementById('accessibility-keyword');
+                            if (keywordInput) {
+                                keywordInput.value = this.textContent;
+                                const searchButton = document.getElementById('search-keyword');
+                                if (searchButton) searchButton.click();
+                            }
+                        });
+                    });
+                }
+                
+                // Add event listener for search button
+                const searchButton = document.getElementById('search-keyword');
+                if (searchButton) {
+                    searchButton.addEventListener('click', function() {
+                        const keywordInput = document.getElementById('accessibility-keyword');
+                        if (keywordInput) {
+                            const keyword = keywordInput.value.trim().toLowerCase();
+                            if (keyword) {
+                                filterReviewsByKeyword(keyword);
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // Initialize filter buttons
+        function initializeFilters() {
+            enhanceFilterUI();
+            
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('opacity-100');
+                        btn.classList.add('opacity-75');
+                    });
+                    this.classList.remove('opacity-75');
+                    this.classList.add('opacity-100');
+                    
+                    const filter = this.id.replace('-btn', '');
+                    filterReviewsByType(filter);
+                });
+            });
+        }
+
+        // Set up review form
+        function setupReviewForm() {
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('review-rating');
+
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = star.dataset.rating;
+                    ratingInput.value = rating;
+                    
+                    // Reset all stars
+                    stars.forEach(s => s.classList.remove('text-yellow-400'));
+                    
+                    // Fill in clicked star and all stars before it
+                    stars.forEach(s => {
+                        if (s.dataset.rating <= rating) {
+                            s.classList.add('text-yellow-400');
+                        }
+                    });
+                });
+            });
+            
+            // Add form submission handler
+            document.getElementById('review-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const name = document.getElementById('review-name').value;
+                const type = document.getElementById('review-type').value;
+                const rating = document.getElementById('review-rating').value;
+                const text = document.getElementById('review-text').value;
+                
+                // Create new review object
+                const newReview = {
+                    author_name: name,
+                    rating: parseInt(rating),
+                    text: text,
+                    type: type,
+                    relative_time_description: 'Just now',
+                    time: new Date().getTime()
+                };
+                
+                // Add to reviews and display
+                SAMPLE_REVIEWS.unshift(newReview);
+                displayReviews(SAMPLE_REVIEWS);
+                
+                // Reset form
+                this.reset();
+                stars.forEach(s => s.classList.remove('text-yellow-400'));
+                
+                // Show confirmation
+                showNotification('Your review has been submitted!');
+            });
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-500 transform translate-y-0 opacity-0';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+            }, 10);
+            
+            // Animate out
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 3000);
+        }
+
+        // Fetch reviews for a place
+        function fetchPlaceReviews(placeId) {
+            // Show loading indicator
+            const container = document.getElementById('reviews-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                        <p class="mt-2">Loading reviews...</p>
+                    </div>
+                `;
+            }
+            
+            // Update place info based on selection
+            let reviews = [];
+            let placeName = '';
+            let placeAddress = '';
+            
+            if (placeId === 'Belchers_Farmers_Market') {
+                reviews = getBelchersFarmersMarketReviews();
+                placeName = "Belcher's Farmer's Market";
+                placeAddress = "12500 Belcher Rd, Largo, FL 33773";
+            } else if (placeId === 'Thai_Bay_Restaurant') {
+                reviews = getThaiRestaurantReviews();
+                placeName = "Thai Bay Restaurant";
+                placeAddress = "1300 E Bay Dr, Largo, FL 33770";
+            }
+            
+            // Update place info in UI
+            const placeNameElement = document.getElementById('place-name');
+            const placeAddressElement = document.getElementById('place-address');
+            
+            if (placeNameElement) placeNameElement.textContent = placeName;
+            if (placeAddressElement) placeAddressElement.textContent = placeAddress;
+            
+            // Reset active filters
+            const allReviewsBtn = document.getElementById('all-reviews-btn');
+            if (allReviewsBtn) {
+                // Find all filter buttons
+                const filterBtns = document.querySelectorAll('.mb-6 button');
+                if (filterBtns.length > 0) {
+                    filterBtns.forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-800');
+                    });
+                    
+                    // Set the "All Reviews" button as active
+                    allReviewsBtn.classList.remove('bg-gray-200', 'text-gray-800');
+                    allReviewsBtn.classList.add('bg-blue-600', 'text-white');
+                }
+            }
+            
+            // Display reviews
+            if (container) {
+                container.innerHTML = ''; // Clear container
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = '<p class="text-center py-4">No reviews available for this place.</p>';
+                } else {
+                    reviews.forEach(review => {
+                        const reviewCard = createReviewCard(review);
+                        container.appendChild(reviewCard);
+                    });
+                }
+            }
+        }
+
+        // Filter reviews by keyword
+        function filterReviewsByKeyword(keyword) {
+            if (!keyword) return;
+            
+            // Get all review cards
+            const reviewCards = document.querySelectorAll('.review-card');
+            let matchFound = false;
+            
+            reviewCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(keyword.toLowerCase())) {
+                    card.style.display = 'block';
+                    
+                    // Highlight the matching keyword more prominently
+                    const paragraphs = card.querySelectorAll('p');
+                    paragraphs.forEach(p => {
+                        const regex = new RegExp(`(${keyword})`, 'gi');
+                        p.innerHTML = p.innerHTML.replace(regex, '<span class="highlighted bg-yellow-200 font-semibold px-1 rounded">$1</span>');
+                    });
+                    
+                    matchFound = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Show message if no matches
+            const container = document.getElementById('reviews-container');
+            if (container) {
+                const noResults = container.querySelector('.no-results');
+                
+                if (!matchFound) {
+                    if (!noResults) {
+                        const message = document.createElement('div');
+                        message.className = 'no-results text-center py-4 my-4 bg-gray-50 rounded';
+                        message.innerHTML = `No reviews matching <span class="font-semibold">"${keyword}"</span> found. Try another keyword or <button id="reset-filter" class="text-blue-600 hover:underline">reset filters</button>.`;
+                        container.prepend(message);
+                        
+                        // Add event listener to reset button
+                        setTimeout(() => {
+                            const resetBtn = document.getElementById('reset-filter');
+                            if (resetBtn) {
+                                resetBtn.addEventListener('click', function() {
+                                    const allReviewsBtn = document.getElementById('all-reviews-btn');
+                                    if (allReviewsBtn) allReviewsBtn.click();
+                                    document.getElementById('accessibility-keyword').value = '';
+                                });
+                            }
+                        }, 0);
+                    }
+                } else if (noResults) {
+                    noResults.remove();
+                }
+            }
+        }
+
+        // Filter reviews by type
+        function filterReviewsByType(type) {
+            const reviewElements = document.querySelectorAll('.review-card');
+            let foundCount = 0;
+            
+            reviewElements.forEach(review => {
+                // Reset highlights first
+                review.querySelector('.review-text').innerHTML = review.querySelector('.review-text').textContent;
+                
+                if (type === 'all' || review.classList.contains(type)) {
+                    review.style.display = 'block';
+                    foundCount++;
+                } else {
+                    review.style.display = 'none';
+                }
+            });
+            
+            // Handle no results
+            const noResults = document.getElementById('no-results');
+            if (foundCount === 0) {
+                if (!noResults) {
+                    const noResultsEl = document.createElement('div');
+                    noResultsEl.id = 'no-results';
+                    noResultsEl.className = 'text-center py-8 text-gray-500';
+                    noResultsEl.innerHTML = `
+                        <p>No reviews found for this category</p>
+                        <button id="reset-filters" class="mt-2 text-blue-500 hover:underline">Reset filters</button>
+                    `;
+                    document.getElementById('reviews-container').appendChild(noResultsEl);
+                    
+                    document.getElementById('reset-filters').addEventListener('click', function() {
+                        resetFilters();
+                    });
+                }
+            } else if (noResults) {
+                noResults.remove();
+            }
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            // Reset filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('opacity-100');
+                btn.classList.add('opacity-75');
+            });
+            document.getElementById('all-btn').classList.remove('opacity-75');
+            document.getElementById('all-btn').classList.add('opacity-100');
+            
+            // Reset keyword input
+            document.getElementById('accessibility-keyword').value = '';
+            
+            // Show all reviews
+            document.querySelectorAll('.review-card').forEach(review => {
+                review.style.display = 'block';
+                // Reset highlights
+                review.querySelector('.review-text').innerHTML = review.querySelector('.review-text').textContent;
+            });
+            
+            // Remove no results message if present
+            const noResults = document.getElementById('no-results');
+            if (noResults) {
+                noResults.remove();
+            }
+        }
+
+        // Display reviews
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = '';
+            
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
+                        </svg>
+                        <p>No reviews found for this location</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            reviews.forEach(review => {
+                const reviewCard = createReviewCard(review);
+                container.appendChild(reviewCard);
+            });
+        }
+
+        // Create a review card element
+        function createReviewCard(review) {
+            // Determine review type based on content
+            const reviewType = determineReviewType(review.text);
+            
+            const card = document.createElement('div');
+            card.className = `review-card p-4 mb-4 ${reviewType}`;
+            
+            // Create star rating display
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= review.rating) {
+                    starsHtml += '<span class="text-yellow-400">★</span>';
+                } else {
+                    starsHtml += '<span class="text-gray-300">★</span>';
+                }
+            }
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-medium">${review.author_name}</h3>
+                        <div class="text-sm text-gray-500">${review.relative_time_description}</div>
+                    </div>
+                    <div class="flex">${starsHtml}</div>
+                </div>
+                <div class="mt-2 review-text">${review.text}</div>
+            `;
+            
+            return card;
+        }
+
+        // Determine the type of review based on content
+        function determineReviewType(text) {
+            text = text.toLowerCase();
+            
+            for (const [type, keywords] of Object.entries(ACCESSIBILITY_KEYWORDS)) {
+                for (const keyword of keywords) {
+                    if (text.includes(keyword)) {
+                        return type;
+                    }
+                }
+            }
+            
+            return 'general';
+        }
+
+        // Sample reviews for Belcher's Farmers Market
+        function getBelchersFarmersMarketReviews() {
+            return [
+                {
+                    author_name: "Alex Johnson",
+                    rating: 4,
+                    text: "I love shopping at Belcher's Farmers Market! The fresh produce is amazing. There is a nice ramp at the entrance which makes it accessible for my wheelchair.",
+                    relative_time_description: "2 months ago",
+                    time: 1648000000000,
+                    type: "entrance"
+                },
+                {
+                    author_name: "Maria Garcia",
+                    rating: 5,
+                    text: "The market has great accessibility features. The aisles are wide enough for my wheelchair and the staff is always helpful. The bathroom is fully accessible too.",
+                    relative_time_description: "1 month ago",
+                    time: 1651000000000,
+                    type: "bathroom"
+                },
+                {
+                    author_name: "Sam Williams",
+                    rating: 3,
+                    text: "Good selection of produce but the parking situation is not ideal. Only two handicap parking spots and they're often full.",
+                    relative_time_description: "3 weeks ago",
+                    time: 1653000000000,
+                    type: "parking"
+                },
+                {
+                    author_name: "Priya Patel",
+                    rating: 4,
+                    text: "I appreciate the automatic doors at the entrance. Makes it easy to get in with my walker. The indoor market area can get a bit crowded which makes navigation challenging.",
+                    relative_time_description: "1 week ago",
+                    time: 1655000000000,
+                    type: "entrance"
+                },
+                {
+                    author_name: "James Wilson",
+                    rating: 5,
+                    text: "The elevator to the second floor where they have the cafe is spacious and reliable. Great for those of us who can't use stairs. The coffee and pastries are worth the trip upstairs!",
+                    relative_time_description: "3 days ago",
+                    time: 1656000000000,
+                    type: "general"
+                }
+            ];
+        }
+
+        // Sample reviews for Thai Bay Restaurant
+        function getThaiRestaurantReviews() {
+            return [
+                {
+                    author_name: "Michelle Lee",
+                    rating: 2,
+                    text: "Food is delicious but the entrance has steps with no ramp. Very difficult for anyone with mobility issues.",
+                    relative_time_description: "3 months ago",
+                    time: 1645000000000,
+                    type: "entrance"
+                },
+                {
+                    author_name: "David Chen",
+                    rating: 3,
+                    text: "Great Pad Thai! The bathroom is not wheelchair accessible though - too narrow doorway and no grab bars.",
+                    relative_time_description: "2 months ago",
+                    time: 1648000000000,
+                    type: "bathroom"
+                },
+                {
+                    author_name: "Emily Brown",
+                    rating: 4,
+                    text: "They have an excellent parking situation with several handicap spots right in front. The entrance does have one step but staff are very helpful.",
+                    relative_time_description: "1 month ago",
+                    time: 1651000000000,
+                    type: "parking"
+                },
+                {
+                    author_name: "Robert Taylor",
+                    rating: 5,
+                    text: "After my review about accessibility issues, they installed a portable ramp! The owner personally helped me in with my wheelchair. Amazing response to customer feedback.",
+                    relative_time_description: "2 weeks ago",
+                    time: 1654000000000,
+                    type: "entrance"
+                },
+                {
+                    author_name: "Lisa Johnson",
+                    rating: 4,
+                    text: "The food is authentic and delicious. Staff are incredibly accommodating for disability needs. They have braille menus available upon request which was a nice surprise!",
+                    relative_time_description: "1 week ago",
+                    time: 1655000000000,
+                    type: "general"
+                }
+            ];
+        }
+
+        // Initialize the basic sample reviews
+        const SAMPLE_REVIEWS = [
+            {
+                author_name: "John Smith",
+                rating: 4,
+                text: "This place has great accessibility features. The ramp at the entrance is well-maintained and the bathroom is fully accessible.",
+                relative_time_description: "2 months ago",
+                time: 1648000000000,
+                type: "entrance"
+            },
+            {
+                author_name: "Jane Doe",
+                rating: 5,
+                text: "I was impressed by how accessible everything was. The staff was very helpful and they had a dedicated parking space close to the entrance.",
+                relative_time_description: "1 month ago",
+                time: 1651000000000,
+                type: "parking"
+            },
+            {
+                author_name: "Mike Johnson",
+                rating: 3,
+                text: "The food was great but the bathroom could use some improvements for accessibility. The doorway is too narrow for a wheelchair.",
+                relative_time_description: "3 weeks ago",
+                time: 1653000000000,
+                type: "bathroom"
+            }
+        ];
     </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Tour - AllWaysAccess</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -36,37 +34,6 @@
             overflow: hidden;
         }
         
-        .info-panel {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-width: 300px;
-            z-index: 100;
-            transform: translateY(20px);
-            opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
-        }
-        
-        .info-panel.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .control-panel {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-        
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -81,35 +48,73 @@
             flex-direction: column;
         }
         
-        .highlight {
-            position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
-            background: rgba(52, 152, 219, 0.3);
-            border: 2px solid rgba(52, 152, 219, 0.8);
-            width: 30px;
-            height: 30px;
-            transform: translate(-50%, -50%);
-            z-index: 50;
-            display: none;
+        .video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
         
-        .modal-enter {
-            opacity: 0;
-            transform: scale(0.9);
+        .video-tour {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #000;
         }
-        .modal-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 300ms, transform 300ms;
+        
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
         }
-        .modal-exit {
-            opacity: 1;
+        
+        .gallery-item {
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
         }
-        .modal-exit-active {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 300ms, transform 300ms;
+        
+        .gallery-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .video-selector {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .video-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .video-btn:hover {
+            background: #2980b9;
+        }
+        
+        .section-title {
+            margin: 2rem 0 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+            display: inline-block;
         }
     </style>
 </head>
@@ -131,910 +136,167 @@
         </div>
         
         <div id="scene-container" class="rounded-lg shadow-lg">
-            <div id="highlight" class="highlight"></div>
-            <div id="info-panel" class="info-panel">
-                <h3 id="feature-name" class="text-lg font-semibold mb-2">Feature Name</h3>
-                <p id="feature-description" class="text-sm">Description of the accessibility feature.</p>
-            </div>
-            
-            <div class="control-panel">
-                <div class="mb-4">
-                    <button id="video-tour" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Physical Tour Video
-                    </button>
-                </div>
-                <div class="text-sm font-semibold mb-2">Accessibility Features:</div>
-                <div class="space-y-2">
-                    <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-sm" data-feature="entrance">
-                        Entrance
-                    </button>
-                    <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-sm" data-feature="seating">
-                        Accessible Seating
-                    </button>
-                    <button class="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-sm" data-feature="path">
-                        Clear Path
-                    </button>
-                </div>
-                <div class="mt-4">
-                    <button id="reset-view" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm">
-                        Reset View
-                    </button>
-                </div>
+            <div class="video-container relative w-full h-full">
+                <video id="tour-video" class="video-tour w-full h-full" controls poster="logo1.jpg">
+                    <source src="thaibai.mov" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
             </div>
             
             <div id="loading-overlay" class="loading-overlay">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-                <p>Loading 3D model...</p>
+                <p>Loading video...</p>
                 <p class="text-sm text-gray-500 mt-2">This may take a few moments</p>
             </div>
         </div>
-    </div>
-    
-    <div id="video-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 hidden">
-        <div class="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4">
-            <div class="p-4 flex justify-between items-center border-b">
-                <h3 class="text-lg font-medium">Physical Tour - Thai Bay Restaurant</h3>
-                <button id="close-video" class="text-gray-500 hover:text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        
+        <div class="video-selector">
+            <button class="video-btn" data-video="thaibai.mov">Tour 1</button>
+            <button class="video-btn" data-video="thai1.mp4">Tour 2</button>
+        </div>
+        
+        <h2 class="section-title">Photo Gallery</h2>
+        <div class="photo-gallery">
+            <div class="gallery-item">
+                <img src="thai2.png" alt="Thai Restaurant Photo 1" loading="lazy">
             </div>
-            <div class="p-4 flex justify-center">
-                <div class="video-container" style="height: 500px; width: 600px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <video id="tour-video" controls poster="logo.png" style="transform: rotate(-90deg); max-height: 650px; max-width: 650px; transform-origin: center;">
-                        <source src="thairestaurant.MP4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
+            <div class="gallery-item">
+                <img src="thai3.png" alt="Thai Restaurant Photo 2" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai4.png" alt="Thai Restaurant Photo 3" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai5.png" alt="Thai Restaurant Photo 4" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai6.png" alt="Thai Restaurant Photo 5" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai7.png" alt="Thai Restaurant Photo 6" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai8.png" alt="Thai Restaurant Photo 7" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai9.png" alt="Thai Restaurant Photo 8" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai10.png" alt="Thai Restaurant Photo 9" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai11.png" alt="Thai Restaurant Photo 10" loading="lazy">
+            </div>
+            <div class="gallery-item">
+                <img src="thai12.png" alt="Thai Restaurant Photo 11" loading="lazy">
             </div>
         </div>
     </div>
     
     <script>
-        // Define accessible features with their positions and descriptions
-        const accessibilityFeatures = {
-            entrance: {
-                position: {x: 0, y: 1.2, z: 5},
-                name: "Automatic Door Entrance",
-                description: "36-inch wide entrance with automatic sliding doors activated by motion sensors. Push button available on both sides at 36\" height."
-            },
-            seating: {
-                position: {x: -2.5, y: 0.5, z: 0},
-                name: "Accessible Tables",
-                description: "Adjustable height tables with 27\" knee clearance. Chairs can be easily removed to accommodate wheelchairs."
-            },
-            path: {
-                position: {x: 0, y: 0.1, z: 0},
-                name: "Clear Pathways",
-                description: "All pathways are at least 36\" wide throughout the restaurant. Non-slip flooring with no level changes."
-            }
-        };
-        
-        // ThreeJS Variables
-        let scene, camera, renderer, controls;
-        let raycaster, mouse, intersects;
-        let restaurantModel, highlightedObject;
-        
-        // Performance optimizations and Thai Bay redesign for virtual-tour.html
-
-        // First, let's fix performance issues by optimizing the rendering and controls
-        let lastRenderTime = 0;
-        const THROTTLE_MS = 16; // Limit to ~60fps
-
-        function animate(time) {
-            requestAnimationFrame(animate);
-            
-            // Throttle rendering to improve performance
-            if (time - lastRenderTime < THROTTLE_MS) return;
-            lastRenderTime = time;
-            
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        
-        function initScene() {
-            // Create scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf8f9fa);
-            
-            // Add ambient light
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            
-            // Add directional light
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7.5);
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
-            
-            // Add camera
-            const aspect = window.innerWidth / window.innerHeight;
-            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-            camera.position.set(0, 5, 10);
-            
-            // Create renderer
-            const container = document.getElementById('scene-container');
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
-            
-            // Add orbit controls
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.minDistance = 3;
-            controls.maxDistance = 15;
-            controls.maxPolarAngle = Math.PI / 2;
-            
-            // Create raycaster for interaction
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-            
-            // Handle window resize
-            window.addEventListener('resize', onWindowResize);
-            
-            // Load restaurant model
-            loadRestaurantModel();
-            
-            // Add floor temporarily while model loads
-            createTemporaryFloor();
-            
-            // Add feature markers
-            addFeatureMarkers();
-            
-            // Add event listeners
-            setupEventListeners();
-            
-            // Start animation loop
-            animate();
-        }
-        
-        function loadRestaurantModel() {
-            const loader = new THREE.GLTFLoader();
-            
-            // In a real application, this would be the path to your actual model
-            // For demonstration, we'll use a temporary model
-            const modelUrl = 'https://cors-anywhere.herokuapp.com/https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RestaurantInterior/glTF/RestaurantInterior.gltf';
-            
-            // For the demo, we'll create a restaurant scene manually
-            createRestaurantScene();
-            
-            // Hide loading overlay after model creation
-            setTimeout(() => {
-                document.getElementById('loading-overlay').style.display = 'none';
-            }, 2000);
-        }
-        
-        function createRestaurantScene() {
-            // Creating a simplified restaurant model
-            restaurantModel = new THREE.Group();
-            scene.add(restaurantModel);
-            
-            // Elevated floor with a small step up
-            const floorGeometry = new THREE.PlaneGeometry(10, 10);
-            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xd7c9aa }); // Bamboo-like color
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.rotation.x = -Math.PI / 2;
-            floor.position.y = 0.2; // Slightly elevated
-            floor.receiveShadow = true;
-            restaurantModel.add(floor);
-            
-            // Exterior ground
-            const groundGeometry = new THREE.PlaneGeometry(15, 15);
-            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = 0;
-            ground.receiveShadow = true;
-            restaurantModel.add(ground);
-            
-            // Walls - dark wood style for Thai theme
-            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x614126 });
-            
-            // Back wall
-            const backWallGeometry = new THREE.BoxGeometry(10, 4, 0.2);
-            const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-            backWall.position.set(0, 2.2, -5);
-            restaurantModel.add(backWall);
-            
-            // Left wall
-            const leftWallGeometry = new THREE.BoxGeometry(0.2, 4, 10);
-            const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-            leftWall.position.set(-5, 2.2, 0);
-            restaurantModel.add(leftWall);
-            
-            // Right wall
-            const rightWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-            rightWall.position.set(5, 2.2, 0);
-            restaurantModel.add(rightWall);
-            
-            // Front wall with entrance
-            const frontWallLeft = new THREE.Mesh(
-                new THREE.BoxGeometry(3.5, 4, 0.2),
-                wallMaterial
-            );
-            frontWallLeft.position.set(-3.25, 2.2, 5);
-            restaurantModel.add(frontWallLeft);
-            
-            const frontWallRight = new THREE.Mesh(
-                new THREE.BoxGeometry(3.5, 4, 0.2),
-                wallMaterial
-            );
-            frontWallRight.position.set(3.25, 2.2, 5);
-            restaurantModel.add(frontWallRight);
-
-            // ADD ACCESSIBILITY RAMP
-            const rampGeometry = new THREE.BoxGeometry(3, 0.1, 4);
-            const rampMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0 });
-            const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
-            ramp.position.set(0, 0.1, 7);
-            ramp.rotation.x = Math.atan(0.2 / 4); // Proper slope for accessibility
-            ramp.name = "entrance";
-            restaurantModel.add(ramp);
-            
-            // Ramp railings
-            const railingMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-            
-            // Left railing
-            const leftRailing = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.05, 0.05, 4.2, 8),
-                railingMaterial
-            );
-            leftRailing.rotation.x = Math.PI / 2 - Math.atan(0.2 / 4);
-            leftRailing.position.set(-1.4, 0.9, 7);
-            restaurantModel.add(leftRailing);
-            
-            // Right railing
-            const rightRailing = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.05, 0.05, 4.2, 8),
-                railingMaterial
-            );
-            rightRailing.rotation.x = Math.PI / 2 - Math.atan(0.2 / 4);
-            rightRailing.position.set(1.4, 0.9, 7);
-            restaurantModel.add(rightRailing);
-
-            // THAI BAY SIGNAGE
-            const signGeometry = new THREE.PlaneGeometry(4, 1);
-            const signTexture = createTextTexture("THAI BAY", "#fff", "#d4237a", "36px Arial", 512, 128);
-            const signMaterial = new THREE.MeshBasicMaterial({ map: signTexture, transparent: true });
-            const sign = new THREE.Mesh(signGeometry, signMaterial);
-            sign.position.set(0, 3, -4.9);
-            restaurantModel.add(sign);
-            
-            // Subtitle sign
-            const subtitleGeometry = new THREE.PlaneGeometry(3, 0.6);
-            const subtitleTexture = createTextTexture("Authentic Thai Cuisine", "#fff", "#45818e", "24px Arial", 512, 128);
-            const subtitleMaterial = new THREE.MeshBasicMaterial({ map: subtitleTexture, transparent: true });
-            const subtitle = new THREE.Mesh(subtitleGeometry, subtitleMaterial);
-            subtitle.position.set(0, 2.3, -4.9);
-            restaurantModel.add(subtitle);
-            
-            // Thai decorations - lotus flower symbols on walls
-            const lotusGeometry = new THREE.PlaneGeometry(1.5, 1.5);
-            const lotusTexture = createLotusTexture();
-            const lotusMaterial = new THREE.MeshBasicMaterial({ map: lotusTexture, transparent: true });
-            
-            // Left wall decoration
-            const leftLotus = new THREE.Mesh(lotusGeometry, lotusMaterial);
-            leftLotus.position.set(-4.9, 2.5, -2);
-            leftLotus.rotation.y = Math.PI / 2;
-            restaurantModel.add(leftLotus);
-            
-            // Right wall decoration
-            const rightLotus = new THREE.Mesh(lotusGeometry, lotusMaterial);
-            rightLotus.position.set(4.9, 2.5, -2);
-            rightLotus.rotation.y = -Math.PI / 2;
-            restaurantModel.add(rightLotus);
-
-            // Door (entrance)
-            const doorFrame = new THREE.Mesh(
-                new THREE.BoxGeometry(3, 4, 0.4),
-                new THREE.MeshStandardMaterial({ color: 0x8d6e63 }) // Dark wood color
-            );
-            doorFrame.position.set(0, 2.2, 5);
-            restaurantModel.add(doorFrame);
-            
-            // Glass door with automatic door opener
-            const door = new THREE.Mesh(
-                new THREE.PlaneGeometry(2.5, 3),
-                new THREE.MeshStandardMaterial({ color: 0xa5d6ff, transparent: true, opacity: 0.7 })
-            );
-            door.position.set(0, 1.7, 4.9);
-            door.name = "entrance";
-            restaurantModel.add(door);
-            
-            // Door button (automatic door opener)
-            const doorButton = new THREE.Mesh(
-                new THREE.BoxGeometry(0.2, 0.2, 0.1),
-                new THREE.MeshStandardMaterial({ color: 0x4caf50 })
-            );
-            doorButton.position.set(1.5, 1, 4.8);
-            doorButton.name = "entrance";
-            restaurantModel.add(doorButton);
-            
-            // Accessibility door sign
-            const doorSignGeometry = new THREE.PlaneGeometry(0.4, 0.4);
-            const doorSignTexture = createAccessibilitySignTexture();
-            const doorSignMaterial = new THREE.MeshBasicMaterial({ map: doorSignTexture });
-            const doorSign = new THREE.Mesh(doorSignGeometry, doorSignMaterial);
-            doorSign.position.set(1.5, 1.3, 4.8);
-            restaurantModel.add(doorSign);
-
-            // Tables and chairs - more compact arrangement
-            const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
-            const chairMaterial = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
-            
-            // Create accessible table (lower and wider)
-            const accessibleTable = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 0.1, 1.5),
-                tableMaterial
-            );
-            accessibleTable.position.set(-2.5, 0.95, 0); // Adjusted for elevated floor
-            accessibleTable.name = "seating";
-            accessibleTable.castShadow = true;
-            restaurantModel.add(accessibleTable);
-            
-            // Accessible table legs with proper clearance
-            for (let i = 0; i < 4; i++) {
-                const legX = -2.5 + (i % 2 === 0 ? -0.9 : 0.9);
-                const legZ = (i < 2 ? -0.65 : 0.65);
-                
-                const tableLeg = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 0.75, 8),
-                    tableMaterial
-                );
-                tableLeg.position.set(legX, 0.575, legZ);
-                restaurantModel.add(tableLeg);
-            }
-            
-            // Standard tables
-            for (let i = 0; i < 3; i++) {
-                const tableX = 2;
-                const tableZ = -3 + i * 3;
-                
-                const table = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.75, 0.75, 0.1, 16),
-                    tableMaterial
-                );
-                table.position.set(tableX, 1, tableZ);
-                table.castShadow = true;
-                restaurantModel.add(table);
-                
-                // Table leg
-                const tableLeg = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8),
-                    tableMaterial
-                );
-                tableLeg.position.set(tableX, 0.6, tableZ);
-                restaurantModel.add(tableLeg);
-                
-                // Chairs around table
-                for (let j = 0; j < 4; j++) {
-                    const angle = j * Math.PI / 2;
-                    const chairX = tableX + Math.cos(angle) * 1.2;
-                    const chairZ = tableZ + Math.sin(angle) * 1.2;
-                    
-                    const chair = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.5, 0.1, 0.5),
-                        chairMaterial
-                    );
-                    chair.position.set(chairX, 0.6, chairZ);
-                    chair.castShadow = true;
-                    restaurantModel.add(chair);
-                    
-                    // Chair back
-                    const chairBack = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.5, 0.5, 0.05),
-                        chairMaterial
-                    );
-                    chairBack.position.set(
-                        chairX - Math.cos(angle) * 0.225,
-                        0.85,
-                        chairZ - Math.sin(angle) * 0.225
-                    );
-                    chairBack.rotation.y = angle;
-                    chairBack.castShadow = true;
-                    restaurantModel.add(chairBack);
-                    
-                    // Chair legs
-                    const chairLeg = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8),
-                        chairMaterial
-                    );
-                    chairLeg.position.set(chairX, 0.3, chairZ);
-                    restaurantModel.add(chairLeg);
-                }
-            }
-            
-            // Clear path markers on floor
-            const pathMaterial = new THREE.MeshStandardMaterial({ color: 0xe3f2fd, transparent: true, opacity: 0.5 });
-            
-            // Main aisle path
-            const mainPath = new THREE.Mesh(
-                new THREE.PlaneGeometry(3, 8),
-                pathMaterial
-            );
-            mainPath.rotation.x = -Math.PI / 2;
-            mainPath.position.set(0, 0.21, 0);
-            mainPath.name = "path";
-            restaurantModel.add(mainPath);
-
-            // Counter/cashier area
-            const counterGeometry = new THREE.BoxGeometry(4, 1, 1);
-            const counterMaterial = new THREE.MeshStandardMaterial({ color: 0x90a4ae });
-            const counter = new THREE.Mesh(counterGeometry, counterMaterial);
-            counter.position.set(-2, 0.7, -4);
-            restaurantModel.add(counter);
-            
-            // Lower section for wheelchair access
-            const accessibleCounter = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 0.8, 1),
-                counterMaterial
-            );
-            accessibleCounter.position.set(0, 0.6, -4);
-            restaurantModel.add(accessibleCounter);
-        }
-        
-        function createTemporaryFloor() {
-            const geometry = new THREE.PlaneGeometry(20, 20);
-            const material = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
-            const floor = new THREE.Mesh(geometry, material);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-        }
-        
-        function addFeatureMarkers() {
-            const markerGeometry = new THREE.SphereGeometry(0.15, 16, 16);
-            const markerMaterial = new THREE.MeshBasicMaterial({ color: 0x3498db });
-            
-            Object.keys(accessibilityFeatures).forEach(featureId => {
-                const feature = accessibilityFeatures[featureId];
-                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-                marker.position.set(feature.position.x, feature.position.y, feature.position.z);
-                marker.name = featureId;
-                marker.userData = { isMarker: true, featureId };
-                scene.add(marker);
-            });
-        }
-        
-        function setupEventListeners() {
-            // Mouse move for hover effects
-            renderer.domElement.addEventListener('mousemove', onMouseMove);
-            
-            // Click to show feature info
-            renderer.domElement.addEventListener('click', onMouseClick);
-            
-            // Feature navigation buttons
-            document.querySelectorAll('[data-feature]').forEach(button => {
-                button.addEventListener('click', () => {
-                    const featureId = button.dataset.feature;
-                    navigateToFeature(featureId);
-                });
-            });
-            
-            // Reset view button
-            document.getElementById('reset-view').addEventListener('click', resetView);
-            
-            // Video tour button
-            document.getElementById('video-tour').addEventListener('click', () => {
-                const videoModal = document.getElementById('video-modal');
-                const video = document.getElementById('tour-video');
-                videoModal.classList.remove('hidden');
-                video.play();
-            });
-            
-            // Close video button
-            document.getElementById('close-video').addEventListener('click', () => {
-                const videoModal = document.getElementById('video-modal');
-                const video = document.getElementById('tour-video');
-                videoModal.classList.add('hidden');
-                video.pause();
-            });
-            
-            // Video modal click outside
-            document.getElementById('video-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'video-modal') {
-                    const videoModal = document.getElementById('video-modal');
-                    const video = document.getElementById('tour-video');
-                    videoModal.classList.add('hidden');
-                    video.pause();
-                }
-            });
-
-            // Update the video container and video styling in the modal
-            const videoContainer = document.querySelector('.video-container');
-            videoContainer.style.height = '500px';
-            videoContainer.style.width = '600px';
-
-            // Better handle video rotation while preserving controls functionality
-            const tourVideo = document.getElementById('tour-video');
-            tourVideo.style.transform = 'rotate(-90deg)';
-            tourVideo.style.maxHeight = '650px';
-            tourVideo.style.maxWidth = '650px';
-            tourVideo.style.transformOrigin = 'center';
-
-            // Fix seeking functionality by adding this event listener
-            tourVideo.addEventListener('click', function(e) {
-              // The click event will propagate to the video element's controls
-              // This empty handler prevents other handlers from interfering
-            });
-        }
-        
-        function onMouseMove(event) {
-            // Calculate mouse position in normalized device coordinates
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-            
-            // Update the highlight cursor
-            updateHighlight();
-        }
-        
-        function onMouseClick() {
-            if (intersects.length > 0) {
-                const object = intersects[0].object;
-                if (object.name && accessibilityFeatures[object.name]) {
-                    showFeatureInfo(object.name);
-                } else if (object.userData && object.userData.isMarker) {
-                    showFeatureInfo(object.userData.featureId);
-                }
-            }
-        }
-        
-        function navigateToFeature(featureId) {
-            const feature = accessibilityFeatures[featureId];
-            if (!feature) return;
-            
-            // Animate camera movement
-            const position = feature.position;
-            
-            // Set target position slightly away from the feature
-            const targetPosition = new THREE.Vector3(
-                position.x + 2,
-                position.y + 1,
-                position.z + 2
-            );
-            
-            // Animate camera movement
-            const startPosition = camera.position.clone();
-            const duration = 1000; // milliseconds
-            const startTime = Date.now();
-            
-            function updateCameraPosition() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Ease function
-                const easeOutCubic = progress => 1 - Math.pow(1 - progress, 3);
-                const easeProgress = easeOutCubic(progress);
-                
-                camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
-                
-                // Look at the feature
-                controls.target.set(position.x, position.y, position.z);
-                controls.update();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(updateCameraPosition);
-                } else {
-                    // Show feature info when camera reaches destination
-                    showFeatureInfo(featureId);
-                }
-            }
-            
-            updateCameraPosition();
-        }
-        
-        function showFeatureInfo(featureId) {
-            const feature = accessibilityFeatures[featureId];
-            if (!feature) return;
-            
-            const infoPanel = document.getElementById('info-panel');
-            const featureName = document.getElementById('feature-name');
-            const featureDescription = document.getElementById('feature-description');
-            
-            featureName.textContent = feature.name;
-            featureDescription.textContent = feature.description;
-            
-            infoPanel.classList.add('visible');
-        }
-        
-        function updateHighlight() {
-            // Update the raycaster with the mouse position
-            raycaster.setFromCamera(mouse, camera);
-            
-            // Find intersections
-            intersects = raycaster.intersectObjects(scene.children, true);
-            
-            // Reset previous highlight
-            if (highlightedObject) {
-                highlightedObject.material.emissive.setHex(0x000000);
-                highlightedObject = null;
-            }
-            
-            const highlight = document.getElementById('highlight');
-            highlight.style.display = 'none';
-            
-            // Check for intersections with named objects or markers
-            if (intersects.length > 0) {
-                const object = intersects[0].object;
-                if ((object.name && accessibilityFeatures[object.name]) || 
-                    (object.userData && object.userData.isMarker)) {
-                    
-                    // Highlight object
-                    if (object.material && !object.userData.isMarker) {
-                        highlightedObject = object;
-                        object.material.emissive.setHex(0x333333);
-                    }
-                    
-                    // Update cursor style
-                    renderer.domElement.style.cursor = 'pointer';
-                    
-                    // Position visual highlight
-                    const vector = new THREE.Vector3();
-                    vector.setFromMatrixPosition(object.matrixWorld);
-                    vector.project(camera);
-                    
-                    const x = (vector.x * 0.5 + 0.5) * renderer.domElement.clientWidth;
-                    const y = (-vector.y * 0.5 + 0.5) * renderer.domElement.clientHeight;
-                    
-                    highlight.style.display = 'block';
-                    highlight.style.left = `${x}px`;
-                    highlight.style.top = `${y}px`;
-                    return;
-                }
-            }
-            
-            // Reset cursor to default if no interactive object found
-            renderer.domElement.style.cursor = 'default';
-        }
-        
-        function resetView() {
-            // Reset camera position
-            camera.position.set(0, 5, 10);
-            controls.target.set(0, 0, 0);
-            controls.update();
-            
-            // Hide info panel
-            document.getElementById('info-panel').classList.remove('visible');
-        }
-        
-        function onWindowResize() {
-            const container = document.getElementById('scene-container');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-        
-        // Function to create a texture with text
-        function createTextTexture(text, textColor, bgColor, font, width, height) {
-            const canvas = document.createElement('canvas');
-            canvas.width = width || 256;
-            canvas.height = height || 256;
-            const ctx = canvas.getContext('2d');
-            
-            // Background
-            ctx.fillStyle = bgColor || 'transparent';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Text
-            ctx.font = font || '32px Arial';
-            ctx.fillStyle = textColor || '#000000';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.needsUpdate = true;
-            return texture;
-        }
-        
-        // Function to create an apple logo texture
-        function createAppleTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            
-            // Draw apple shape
-            ctx.fillStyle = '#e74c3c';
-            ctx.beginPath();
-            ctx.arc(128, 128, 80, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Stem
-            ctx.fillStyle = '#27ae60';
-            ctx.fillRect(118, 48, 20, 30);
-            
-            // Leaf
-            ctx.fillStyle = '#27ae60';
-            ctx.beginPath();
-            ctx.ellipse(158, 68, 30, 15, Math.PI / 4, 0, Math.PI * 2);
-            ctx.fill();
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            return texture;
-        }
-        
-        // Function to create an accessibility sign texture
-        function createAccessibilitySignTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            
-            // Blue background
-            ctx.fillStyle = '#0052a5';
-            ctx.fillRect(0, 0, 128, 128);
-            
-            // White wheelchair symbol
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            // Head
-            ctx.arc(64, 40, 12, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Body and wheel
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = '#ffffff';
-            ctx.beginPath();
-            // Wheel
-            ctx.arc(64, 85, 22, 0, Math.PI * 2);
-            // Body
-            ctx.moveTo(64, 52);
-            ctx.lineTo(64, 70);
-            // Arms
-            ctx.moveTo(45, 70);
-            ctx.lineTo(85, 70);
-            // Legs
-            ctx.moveTo(56, 80);
-            ctx.lineTo(45, 102);
-            ctx.stroke();
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            return texture;
-        }
-        
-        function zoomToFeature(featureName) {
-            const infoPanel = document.getElementById('info-panel');
-            const featureDescription = document.getElementById('feature-description');
-            
-            if (accessibilityFeatures[featureName]) {
-                const feature = accessibilityFeatures[featureName];
-                
-                // Update info panel
-                featureName.textContent = feature.name;
-                featureDescription.textContent = feature.description;
-                infoPanel.classList.add('visible');
-                
-                // Animate camera to feature position
-                const targetPosition = feature.position;
-                const startPosition = { 
-                    x: camera.position.x, 
-                    y: camera.position.y, 
-                    z: camera.position.z 
-                };
-                
-                // Calculate position slightly back from the feature for better view
-                const cameraDistance = 3;
-                const targetView = {
-                    x: targetPosition.x,
-                    y: targetPosition.y + 0.5,  // Slightly above feature
-                    z: targetPosition.z + cameraDistance
-                };
-                
-                // Animate camera movement
-                const duration = 1000;  // ms
-                const start = Date.now();
-                
-                function updateCamera() {
-                    const elapsed = Date.now() - start;
-                    const progress = Math.min(elapsed / duration, 1);
-                    
-                    // Ease-in-out function
-                    const easing = progress < 0.5 
-                        ? 2 * progress * progress 
-                        : -1 + (4 - 2 * progress) * progress;
-                    
-                    camera.position.x = startPosition.x + (targetView.x - startPosition.x) * easing;
-                    camera.position.y = startPosition.y + (targetView.y - startPosition.y) * easing;
-                    camera.position.z = startPosition.z + (targetView.z - startPosition.z) * easing;
-                    
-                    controls.target.set(targetPosition.x, targetPosition.y, targetPosition.z);
-                    controls.update();
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(updateCamera);
-                    }
-                }
-                
-                updateCamera();
-            }
-        }
-        
-        // Create a lotus flower texture (Thai-themed decoration)
-        function createLotusTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            
-            // Background - transparent
-            ctx.clearRect(0, 0, 256, 256);
-            
-            // Draw lotus flower shape
-            ctx.fillStyle = '#d81b60'; // Pink lotus color
-            
-            // Outer petals
-            for (let i = 0; i < 8; i++) {
-                ctx.save();
-                ctx.translate(128, 128);
-                ctx.rotate(i * Math.PI / 4);
-                ctx.beginPath();
-                ctx.ellipse(0, -60, 25, 60, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-            
-            // Inner petals
-            ctx.fillStyle = '#f06292'; // Lighter pink
-            for (let i = 0; i < 8; i++) {
-                ctx.save();
-                ctx.translate(128, 128);
-                ctx.rotate(i * Math.PI / 4 + Math.PI/8);
-                ctx.beginPath();
-                ctx.ellipse(0, -40, 15, 40, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-            
-            // Center
-            ctx.fillStyle = '#ffd54f'; // Golden center
-            ctx.beginPath();
-            ctx.arc(128, 128, 25, 0, Math.PI * 2);
-            ctx.fill();
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            return texture;
-        }
-        
-        // Optimize the control initialization
-        function initControls() {
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.screenSpacePanning = false;
-            controls.minDistance = 1;
-            controls.maxDistance = 15;
-            controls.maxPolarAngle = Math.PI / 2;
-            
-            // Reduce sensitivity to prevent glitching
-            controls.rotateSpeed = 0.7;
-            controls.zoomSpeed = 0.7;
-            controls.panSpeed = 0.7;
-        }
-        
-        // Initialize scene when the page loads
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            // Load place details from localStorage if available
+            // Load place details
+            loadPlaceDetails();
+            
+            // Initialize video player
+            initVideoPlayer();
+            
+            // Setup video selector buttons
+            setupVideoSelector();
+            
+            // Setup gallery image viewer
+            setupGallery();
+        });
+
+        function loadPlaceDetails() {
             const savedPlace = localStorage.getItem('selectedPlace');
             if (savedPlace) {
                 const placeData = JSON.parse(savedPlace);
                 document.getElementById('place-name').textContent = placeData.name;
                 document.getElementById('place-address').textContent = placeData.address;
             }
+        }
+
+        function initVideoPlayer() {
+            const videoPlayer = document.getElementById('tour-video');
             
-            // Initialize 3D scene
-            initScene();
-        });
+            videoPlayer.addEventListener('loadeddata', () => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            });
+
+            // Hide loading overlay after 3 seconds even if video hasn't loaded
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 3000);
+            
+            // Set video player properties
+            videoPlayer.style.objectFit = 'contain';
+            videoPlayer.style.backgroundColor = '#000';
+        }
+        
+        function setupVideoSelector() {
+            const videoButtons = document.querySelectorAll('.video-btn');
+            const videoPlayer = document.getElementById('tour-video');
+            
+            videoButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const videoSrc = button.getAttribute('data-video');
+                    const currentTime = videoPlayer.currentTime;
+                    const wasPlaying = !videoPlayer.paused;
+                    
+                    // Show loading overlay
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    // Update video source
+                    videoPlayer.querySelector('source').src = videoSrc;
+                    videoPlayer.load();
+                    
+                    // Continue playing from same time if possible
+                    videoPlayer.addEventListener('loadeddata', function onLoad() {
+                        if (wasPlaying) {
+                            videoPlayer.play();
+                        }
+                        videoPlayer.removeEventListener('loadeddata', onLoad);
+                    });
+                    
+                    // Highlight active button
+                    videoButtons.forEach(btn => btn.classList.remove('bg-blue-700'));
+                    button.classList.add('bg-blue-700');
+                });
+            });
+        }
+        
+        function setupGallery() {
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            
+            galleryItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const imgSrc = item.querySelector('img').src;
+                    
+                    // Create modal for fullscreen view
+                    const modal = document.createElement('div');
+                    modal.classList.add('fixed', 'inset-0', 'z-50', 'flex', 'items-center', 'justify-center', 'bg-black', 'bg-opacity-90');
+                    
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.classList.add('max-h-[90vh]', 'max-w-[90vw]', 'object-contain');
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.innerHTML = '&times;';
+                    closeBtn.classList.add('absolute', 'top-4', 'right-4', 'text-white', 'text-4xl', 'leading-none');
+                    
+                    modal.appendChild(img);
+                    modal.appendChild(closeBtn);
+                    document.body.appendChild(modal);
+                    
+                    // Close modal on click
+                    modal.addEventListener('click', () => {
+                        document.body.removeChild(modal);
+                    });
+                });
+            });
+        }
     </script>
 </body>
-</html> 
+</html>

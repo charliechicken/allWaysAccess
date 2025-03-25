@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllWaysAccess - Virtual Business Tours</title>
+    <title>AllWaysAccess - Search Location</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -20,75 +20,73 @@
             line-height: 1.5;
             background-color: var(--background);
             color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
         
         .search-input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.5rem;
+            padding: 14px 16px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             font-size: 1rem;
-            background-color: #fff;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            background-color: white;
         }
         
         .search-input:focus {
-            outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.15);
+            outline: none;
         }
         
-        /* Settings button and panel styles */
-        .settings-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--accent);
-            color: white;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .settings-panel {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 1000;
-            width: 280px;
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
         }
         
-        /* Loading indicator styles */
-        .map-loading {
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:after {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.8);
-            z-index: 5;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
         }
-
-        /* Modern design additions */
+        
+        .btn:hover:after {
+            transform: translateX(0);
+        }
+        
+        /* Decorative elements */
         .blob {
             position: fixed;
             border-radius: 50%;
             filter: blur(60px);
             opacity: 0.4;
-            z-index: -1;
+            z-index: 1;
         }
         
         .blob-1 {
@@ -110,40 +108,18 @@
         }
         
         @keyframes blob-float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(50px, 50px) rotate(10deg); }
-            66% { transform: translate(-20px, 30px) rotate(-5deg); }
-            100% { transform: translate(10px, -40px) rotate(3deg); }
-        }
-        
-        .card {
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.12);
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .search-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.15);
-            outline: none;
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(50px, 50px) rotate(10deg);
+            }
+            66% {
+                transform: translate(-20px, 30px) rotate(-5deg);
+            }
+            100% {
+                transform: translate(10px, -40px) rotate(3deg);
+            }
         }
         
         .shimmer {
@@ -170,269 +146,162 @@
         }
         
         @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
-        
-        .map-loading {
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(4px);
-        }
-        
-        .settings-button {
-            background: linear-gradient(135deg, var(--accent), #2980b9);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .settings-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-        
-        .logo {
-            position: relative;
-        }
-        
-        .logo span {
-            background: linear-gradient(to right, #3498db, #2c3e50);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            100% {
+                transform: translateX(100%);
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Add decorative blobs -->
+    <!-- Decorative blobs -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
-
+    <button class="text-xl font-semibold text-blue-800 border-4-color: black" onclick="window.location.href = 'home.html';">Home</button>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <header class="mb-8">
             <div class="logo mb-4 flex items-center gap-4">
                     <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-12 h-12 object-contain">
                 
-                <span class="text-2xl font-bold">AllWaysAccess</span>
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">AllWaysAccess</span>
             </div>
-            <nav class="flex space-x-4">
-                <a href="search.html" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-all hover:gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                    </svg>
-                    <span>Back to Search</span>
-                </a>
-            </nav>
         </header>
 
-        <div class="search-container mb-6 shimmer" role="search">
-            <label for="location-input" class="sr-only">Search for locations</label>
-            <input 
-                type="text" 
-                id="location-input"
-                placeholder="Search for restaurants, businesses, or addresses..."
-                class="search-input"
-                aria-label="Search for locations"
-                role="combobox"
-                aria-expanded="false"
-                aria-autocomplete="list"
-            >
-            <div id="place-details" class="place-details hidden mt-4 p-4 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg" role="region" aria-live="polite">
-                <h3 id="place-name" class="text-lg font-semibold text-blue-800"></h3>
-                <p id="place-address" class="text-blue-600"></p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card relative">
-                <div id="map-loading" class="map-loading">
-                    <div class="text-center p-4">
-                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
-                        <p class="mt-2 text-blue-600 font-medium">Loading map...</p>
+        <main class="max-w-2xl mx-auto">
+            <div class="card p-8">
+                <h1 class="text-3xl font-bold mb-2" style="color: var(--primary)">Find a Location</h1>
+                <p class="text-gray-600 mb-6">Discover accessibility features at restaurants and businesses</p>
+                
+                <div class="space-y-6">
+                    <div class="relative shimmer">
+                        <input 
+                            type="text" 
+                            id="location-input"
+                            placeholder="Search for businesses in Tampa/Clearwater..."
+                            class="search-input"
+                        >
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div id="place-details" class="hidden space-y-4 mt-6">
+                        <div class="p-4 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg">
+                            <h2 id="place-name" class="text-xl font-semibold text-blue-800"></h2>
+                            <p id="place-address" class="text-blue-600"></p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                            <a href="index.html" class="btn bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg text-center hover:from-blue-700 hover:to-blue-800 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                    </svg>
+                                    3D & Street View
+                                </span>
+                            </a>
+                            <a href="virtual-tour.html" class="btn bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg text-center hover:from-green-600 hover:to-green-700 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Virtual Tour
+                                </span>
+                            </a>
+                            <a href="reviews.html" class="btn bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-lg text-center hover:from-purple-600 hover:to-purple-700 transition shadow-md">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                    </svg>
+                                    Read Reviews
+                                </span>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div id="map" class="w-full h-[500px] rounded-lg" role="region" aria-label="Satellite view map"></div>
             </div>
-            <div class="card relative">
-                <div id="street-view-loading" class="map-loading">
-                    <div class="text-center p-4">
-                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
-                        <p class="mt-2 text-blue-600 font-medium">Loading street view...</p>
-                    </div>
+            
+            <!-- Additional feature suggestions -->
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="font-medium">Verified Locations</h3>
+                    <p class="text-sm text-gray-600">Places with verified accessibility features</p>
                 </div>
-                <div id="street-view" class="w-full h-[500px] rounded-lg" role="region" aria-label="Street view"></div>
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                    </svg>
+                    <h3 class="font-medium">Community Reviews</h3>
+                    <p class="text-sm text-gray-600">Real accessibility experiences shared</p>
+                </div>
+                <div class="p-4 bg-white rounded-lg shadow-md text-center hover:shadow-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-purple-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="font-medium">Real-Time Updates</h3>
+                    <p class="text-sm text-gray-600">Latest information on accessibility features</p>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Settings button with improved styling -->
-    <div id="settings-button" class="settings-button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-    </div>
-    
-    <div id="settings-panel" class="settings-panel hidden card">
-        <h3 class="text-lg font-medium mb-3 text-gray-800">Map Settings</h3>
-        <div class="space-y-3">
-            <div>
-                <label for="map-tilt" class="block text-sm font-medium text-gray-700 mb-1">Tilt</label>
-                <input type="range" id="map-tilt" min="0" max="45" value="45" class="w-full">
-            </div>
-            <div>
-                <label for="map-heading" class="block text-sm font-medium text-gray-700 mb-1">Heading</label>
-                <input type="range" id="map-heading" min="0" max="360" value="0" class="w-full">
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // Variables to hold map objects
-        let map, streetView, autocomplete;
-        let marker;
-        const TAMPA_CENTER = { lat: 27.9506, lng: -82.4572 };
-        let mapsLoaded = false;
-        
-        // Add new accessibility markers configuration
-        const ACCESSIBILITY_ISSUES = [
-            {
-                position: { lat: 27.9300, lng: -82.4572 },
-                type: 'door',
-                title: 'Door',
-                description: 'Main entrance door is too narrow for wheelchairs, and nonautomatic',
-                streetViewOverlay: {
-                    width: '50px',
-                    height: '80px',
-                    color: 'rgba(255, 0, 0, 0.3)',
-                    borderColor: '#FF0000'
-                }
-            },
-            {
-                position: { lat: 27.9505, lng: -82.4571 },
-                type: 'parking',
-                title: 'Handicap Parking',
-                description: 'Only one handicap parking space available near Thai Bay',
-                streetViewOverlay: {
-                    width: '100px',
-                    height: '50px',
-                    color: 'rgba(0, 0, 255, 0.3)',
-                    borderColor: '#0000FF'
-                }
-            },
-            {
-                position: { lat: 27.9507, lng: -82.4573 },
-                type: 'ramp',
-                title: 'Ramp',
-                description: 'Ramp access at side entrance',
-                streetViewOverlay: {
-                    width: '60px',
-                    height: '40px',
-                    color: 'rgba(255, 165, 0, 0.3)',
-                    borderColor: '#FFA500'
-                }
-            }
-        ];
+        let autocomplete;
 
-        // Separate initialization from Maps API callback
-        function initializeApp() {
-            // Initialize UI elements
-            document.getElementById('settings-button').addEventListener('click', function() {
-                const panel = document.getElementById('settings-panel');
-                panel.classList.toggle('hidden');
-            });
-            
-            // Initialize Google Maps when API is ready
-            if (window.google && window.google.maps) {
-                initMap();
-            } else {
-                // Load Google Maps script if not already loaded
-                loadGoogleMapsScript();
-            }
-            
-            // Restore previous search if exists
-            const savedPlace = localStorage.getItem('selectedPlace');
-            if (savedPlace) {
-                const placeData = JSON.parse(savedPlace);
-                
-                // Show place details even before map loads
-                const detailsDiv = document.getElementById('place-details');
-                const nameEl = document.getElementById('place-name');
-                const addressEl = document.getElementById('place-address');
-                
-                detailsDiv.classList.remove('hidden');
-                nameEl.textContent = placeData.name;
-                addressEl.textContent = placeData.address;
-                
-                document.getElementById('location-input').value = placeData.name;
-            }
-        }
-        
-        // Load Google Maps API script
-        function loadGoogleMapsScript() {
+        function initializeGoogleMaps() {
+            // Load Google Maps script dynamically
             const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB-44bMn47nLkyaDp_oADjQvAa_5vWz7uI&libraries=places,marker,geometry&callback=googleMapsCallback';
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB-44bMn47nLkyaDp_oADjQvAa_5vWz7uI&libraries=places';
             script.async = true;
             script.defer = true;
-            document.head.appendChild(script);
             
-            // Add timeout to detect loading issues
-            setTimeout(() => {
-                if (!window.google || !window.google.maps) {
-                    handleMapLoadError();
-                }
-            }, 5000); // 5 second timeout
-        }
-        
-        // Callback when Google Maps API is loaded
-        function googleMapsCallback() {
-            mapsLoaded = true;
-            initMap();
+            script.onload = () => {
+                // Wait a brief moment before initializing
+                setTimeout(initAutocomplete, 500);
+            };
+            
+            document.head.appendChild(script);
         }
 
-        // Error handler for Google Maps
-        function gm_authFailure() {
-            const mapDiv = document.getElementById('map');
-            const streetViewDiv = document.getElementById('street-view');
-            const mapLoading = document.getElementById('map-loading');
-            const streetViewLoading = document.getElementById('street-view-loading');
+        function initAutocomplete() {
+            const input = document.getElementById('location-input');
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(27.7089, -82.8458),
+                    new google.maps.LatLng(28.0889, -82.4458)
+                ),
+                types: ['establishment'],
+                componentRestrictions: { country: 'us' },
+                fields: ['name', 'geometry', 'formatted_address']
+            });
+
+            autocomplete.addListener('place_changed', handlePlaceSelection);
+        }
+
+        function handlePlaceSelection() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                alert("No location found for: " + place.name);
+                return;
+            }
+
+            const placeData = {
+                name: place.name,
+                address: place.formatted_address,
+                location: {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                },
+                timestamp: new Date().getTime()
+            };
             
-            // Hide loading indicators
-            mapLoading.classList.add('hidden');
-            streetViewLoading.classList.add('hidden');
-            
-            // Show error message
-            const errorMessage = `
-                <div class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
-                    <div class="text-center p-6 max-w-md">
-                        <div class="mb-4 text-blue-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2 text-gray-800">Map Loading Error</h3>
-                        <p class="text-gray-600 mb-4">To fix this issue, please:</p>
-                        <ul class="text-left text-gray-600 mb-4 space-y-2 pl-4">
-                            <li>• Enable the <strong>Maps JavaScript API</strong></li>
-                            <li>• Enable the <strong>Places API</strong></li>
-                            <li>• Enable the <strong>Street View API</strong></li>
-                            <li>• Verify your API key restrictions</li>
-                        </ul>
-                        <button id="retry-maps" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300 shadow-md">
-                            Retry Loading Maps
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            mapDiv.innerHTML = errorMessage;
-            streetViewDiv.innerHTML = errorMessage;
-            
-            setTimeout(() => {
-                const retryButtons = document.querySelectorAll('#retry-maps');
-                retryButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        location.reload();
-                    });
-                });
-            }, 100);
+            localStorage.setItem('selectedPlace', JSON.stringify(placeData));
+            showPlaceDetails(placeData);
         }
 
         function showPlaceDetails(placeData) {
@@ -444,414 +313,20 @@
             nameEl.textContent = placeData.name;
             addressEl.textContent = placeData.address;
             
-            // Don't try to update map if maps aren't loaded yet
-            if (!mapsLoaded || !map) return;
-            
-            // Update map (left screen)
-            const location = placeData.location || TAMPA_CENTER;
-            map.setCenter(location);
-            map.setZoom(19);
-            marker.position = location;
-            
-            // Update street view (right screen)
-            const streetViewService = new google.maps.StreetViewService();
-            streetViewService.getPanorama({
-                location: location,
-                radius: 100,
-                source: google.maps.StreetViewSource.OUTDOOR
-            }, (data, status) => {
-                if (status === google.maps.StreetViewStatus.OK) {
-                    const nearbyPanorama = data.location.latLng;
-                    const heading = google.maps.geometry.spherical.computeHeading(
-                        nearbyPanorama,
-                        location
-                    );
-                    
-                    streetView.setPosition(nearbyPanorama);
-                    streetView.setPov({
-                        heading: heading,
-                        pitch: 0
-                    });
-                } else {
-                    // No street view found - just position at the location anyway
-                    streetView.setPosition(location);
-                }
-                
-                // Hide loading indicator
-                document.getElementById('street-view-loading').classList.add('hidden');
-            });
-
-            // Update accessibility markers positions relative to new center
-            ACCESSIBILITY_ISSUES.forEach((issue, index) => {
-                const offset = {
-                    door: { lat: 0.00000, lng: 0.00005 },
-                    parking: { lat: 0.000215, lng: 0.0001059 },
-                    ramp: { lat: 0.000294, lng: 0.00014 }
-                }[issue.type];
-                
-                issue.position = {
-                    lat: location.lat + offset.lat,
-                    lng: location.lng + offset.lng
-                };
-            });
+            document.getElementById('location-input').value = placeData.name;
         }
 
-        function initMap() {
-            try {
-                // Define marker icons here where google is available
-                const MARKER_ICONS = {
-                    door: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: '#FF4444',
-                        fillOpacity: 0.7,
-                        strokeWeight: 2,
-                        strokeColor: '#FF0000',
-                        scale: 10
-                    },
-                    parking: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: '#4444FF',
-                        fillOpacity: 0.7,
-                        strokeWeight: 2,
-                        strokeColor: '#0000FF',
-                        scale: 10
-                    },
-                    ramp: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: '#FF9900',
-                        fillOpacity: 0.7,
-                        strokeWeight: 2,
-                        strokeColor: '#FF6600',
-                        scale: 10
-                    }
-                };
-
-                // Create the map
-                map = new google.maps.Map(document.getElementById('map'), {
-                    center: TAMPA_CENTER,
-                    zoom: 10,
-                    mapTypeId: 'satellite',
-                    tilt: 45,
-                    mapId: 'YOUR_MAP_ID_HERE'
-                });
-                
-                // Enable WebGL mode for 3D buildings
-                if (google.maps.WebGLOverlayView) {
-                    const webglOverlayView = new google.maps.WebGLOverlayView();
-                    webglOverlayView.setMap(map);
-                }
-                
-                // Create street view
-                streetView = new google.maps.StreetViewPanorama(
-                    document.getElementById('street-view'),
-                    {
-                        position: TAMPA_CENTER,
-                        pov: { heading: 0, pitch: 0 },
-                        zoom: 1
-                    }
-                );
-                map.setStreetView(streetView);
-                
-                // Create marker
-                if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
-                    marker = new google.maps.marker.AdvancedMarkerElement({
-                        map,
-                        position: TAMPA_CENTER
-                    });
-                } else {
-                    // Fallback to regular marker if Advanced Marker isn't available
-                    marker = new google.maps.Marker({
-                        map,
-                        position: TAMPA_CENTER
-                    });
-                }
-                
-                // Initialize autocomplete
-                autocomplete = new google.maps.places.Autocomplete(
-                    document.getElementById('location-input'),
-                    {
-                        bounds: new google.maps.LatLngBounds(
-                            new google.maps.LatLng(27.7089, -82.8458),
-                            new google.maps.LatLng(28.0889, -82.4458)
-                        ),
-                        types: ['establishment'],
-                        componentRestrictions: { country: 'us' }
-                    }
-                );
-                
-                autocomplete.addListener('place_changed', () => {
-                    const place = autocomplete.getPlace();
-                    if (!place.geometry) {
-                        alert("No location found for: " + place.name);
-                        return;
-                    }
-                    
-                    // Store complete place data
-                    const placeData = {
-                        name: place.name,
-                        address: place.formatted_address,
-                        location: {
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng()
-                        },
-                        placeId: place.place_id,
-                        timestamp: new Date().getTime()
-                    };
-                    
-                    localStorage.setItem('selectedPlace', JSON.stringify(placeData));
-                    
-                    // Show place details and update map/street view
-                    showPlaceDetails(placeData);
-                });
-                
-                // Load saved place if any
-                const savedPlace = localStorage.getItem('selectedPlace');
-                if (savedPlace) {
-                    const placeData = JSON.parse(savedPlace);
-                    showPlaceDetails(placeData);
-                }
-                
-                // Hide loading indicators
-                document.getElementById('map-loading').classList.add('hidden');
-                document.getElementById('street-view-loading').classList.add('hidden');
-                
-                // Add accessibility markers legend
-                const legend = document.createElement('div');
-                legend.className = 'bg-white p-3 rounded-lg shadow-md';
-                legend.style.margin = '10px';
-                legend.style.padding = '10px';
-                legend.innerHTML = `
-                    <div class="text-sm font-semibold mb-2">Accessibility Notes</div>
-                    <div class="flex items-center mb-1">
-                        <span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
-                        <span class="text-sm">Door Issue (Nonautomatic)</span>
-                    </div>
-                    <div class="flex items-center mb-1">
-                        <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
-                        <span class="text-sm">Disability Parking Spots</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>
-                        <span class="text-sm">Accessible Ramp</span>
-                    </div>
-                `;
-                map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
-
-                // Add accessibility markers to satellite view (left side)
-                ACCESSIBILITY_ISSUES.forEach(issue => {
-                    const marker = new google.maps.Marker({
-                        position: issue.position,
-                        map: map,
-                        icon: MARKER_ICONS[issue.type],
-                        title: issue.title,
-                        optimized: false
-                    });
-
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: `
-                            <div class="p-2">
-                                <h3 class="font-bold text-red-600">${issue.title}</h3>
-                                <p class="text-sm text-gray-700">${issue.description}</p>
-                            </div>
-                        `
-                    });
-
-                    marker.addListener('click', () => {
-                        infoWindow.open(map, marker);
-                    });
-                });
-
-                // Update the THAI_BAY_ISSUES array with more precise coordinates
-                const THAI_BAY_ISSUES = [
-                    {
-                        position: { lat: 27.916933, lng: -82.773607 }, // Moved further west
-                        type: 'door',
-                        content: 'Door at entrance',
-                        dimensions: {
-                            width: '40px',
-                            height: '80px',
-                            yOffset: 1.05
-                        }
-                    }
-                ];
-
-                // Update the AccessibilityOverlay class
-                class AccessibilityOverlay extends google.maps.OverlayView {
-                    constructor(position, content, type, dimensions) {
-                        super();
-                        this.position = position;
-                        this.content = content;
-                        this.type = type;
-                        this.dimensions = dimensions;
-                        this.div = null;
-                    }
-
-                    onAdd() {
-                        this.div = document.createElement('div');
-                        
-                        // Style the container
-                        Object.assign(this.div.style, {
-                            position: 'absolute',
-                            width: this.dimensions.width,
-                            height: this.dimensions.height,
-                            border: '2px solid #FF0000',
-                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                            pointerEvents: 'none',
-                            transformOrigin: '0 0',
-                            zIndex: 1000
-                        });
-
-                        // Create label
-                        const label = document.createElement('div');
-                        Object.assign(label.style, {
-                            position: 'absolute',
-                            top: '-25px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            backgroundColor: 'rgba(255, 0, 0, 0.9)',
-                            color: 'white',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            whiteSpace: 'nowrap',
-                            pointerEvents: 'none'
-                        });
-                        label.textContent = this.content;
-                        this.div.appendChild(label);
-
-                        const panes = this.getPanes();
-                        panes.overlayLayer.appendChild(this.div);
-                    }
-
-                    draw() {
-                        const projection = this.getProjection();
-                        if (!projection) return;
-
-                        const position = new google.maps.LatLng(this.position.lat, this.position.lng);
-                        const streetView = this.getMap();
-                        const location = streetView.getPosition();
-                        const pov = streetView.getPov();
-
-                        // Calculate heading and distance
-                        const distance = google.maps.geometry.spherical.computeDistanceBetween(location, position);
-                        const heading = google.maps.geometry.spherical.computeHeading(location, position);
-                        const relativeHeading = ((heading - pov.heading + 540) % 360) - 180; // Normalize to [-180, 180]
-
-                        // Debug information
-                        console.log('Debug Info:', {
-                            'Your Position': {
-                                lat: location.lat().toFixed(6),
-                                lng: location.lng().toFixed(6)
-                            },
-                            'Door Position': {
-                                lat: this.position.lat.toFixed(6),
-                                lng: this.position.lng.toFixed(6)
-                            },
-                            'Distance to door': distance.toFixed(2) + 'm',
-                            'Absolute Heading': heading.toFixed(2) + '°',
-                            'Your heading': pov.heading.toFixed(2) + '°',
-                            'Relative heading': relativeHeading.toFixed(2) + '°',
-                            'Is Visible': Math.abs(relativeHeading) < 60 && distance < 10
-                        });
-/*
-                        // Create debug element if it doesn't exist
-                        if (!this.debugElement) {
-                            this.debugElement = document.createElement('div');
-                            Object.assign(this.debugElement.style, {
-                                position: 'fixed',
-                                top: '10px',
-                                left: '10px',
-                                background: 'rgba(0, 0, 0, 0.8)',
-                                color: 'white',
-                                padding: '10px',
-                                borderRadius: '5px',
-                                fontFamily: 'monospace',
-                                zIndex: 1000,
-                                pointerEvents: 'none'
-                            });
-                            document.body.appendChild(this.debugElement);
-                        }
-
-                        // Update debug display
-                        
-                        this.debugElement.innerHTML = `
-                            <div>Distance: ${distance.toFixed(2)}m</div>
-                            <div>Absolute Heading: ${heading.toFixed(2)}°</div>
-                            <div>Your heading: ${pov.heading.toFixed(2)}°</div>
-                            <div>Relative: ${relativeHeading.toFixed(2)}°</div>
-                            <div>Visible: ${Math.abs(relativeHeading) < 60 && distance < 10}</div>
-                        `;
-*/
-                        // Visibility conditions
-                        if (Math.abs(relativeHeading) > 60 || distance > 10) {
-                            this.div.style.display = 'none';
-                            return;
-                        }
-
-                        // Calculate screen position
-                        const point = projection.fromLatLngToContainerPixel(position);
-                        
-                        // Position and scale the overlay
-                        this.div.style.display = 'block';
-                        
-                        // Adjust vertical position based on pitch and distance
-                        const heightOffset = this.dimensions.yOffset * (window.innerHeight / distance);
-                        const pitchOffset = Math.tan(pov.pitch * Math.PI / 180) * distance * 10;
-                        const adjustedY = point.y - heightOffset + pitchOffset;
-
-                        // Update position and transform
-                        Object.assign(this.div.style, {
-                            left: `${point.x}px`,
-                            top: `${adjustedY}px`,
-                            transform: `translate(-50%, -50%) scale(${Math.max(0.5, Math.min(2, 8 / distance))})`,
-                            opacity: Math.cos((Math.abs(relativeHeading) * Math.PI) / 180)
-                        });
-                    }
-
-                    onRemove() {
-                        if (this.div) {
-                            this.div.parentElement.removeChild(this.div);
-                            this.div = null;
-                        }
-                    }
-                }
-
-                // Update how we create and attach the overlay (in the initMap function)
-                THAI_BAY_ISSUES.forEach(issue => {
-                    const overlay = new AccessibilityOverlay(
-                        issue.position,
-                        issue.content,
-                        issue.type,
-                        issue.dimensions
-                    );
-                    overlay.setMap(streetView);
-                });
-
-                // Add CSS to head for overlay hover effects
-                const style = document.createElement('style');
-                style.textContent = `
-                    .street-view-overlay:hover {
-                        opacity: 0.8;
-                        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-                    }
-                `;
-                document.head.appendChild(style);
-                
-            } catch (error) {
-                console.error("Error initializing map:", error);
-                gm_authFailure();
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delay Google Maps initialization
+            setTimeout(initializeGoogleMaps, 1000);
+            
+            // Restore previous search if exists
+            const savedPlace = localStorage.getItem('selectedPlace');
+            if (savedPlace) {
+                showPlaceDetails(JSON.parse(savedPlace));
             }
-        }
-        
-        // Listen for auth failure
-        window.gm_authFailure = gm_authFailure;
-        
-        // Global callback for Google Maps API
-        window.googleMapsCallback = googleMapsCallback;
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        });
     </script>
 </body>
-</html>
+</html> 

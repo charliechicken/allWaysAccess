@@ -291,6 +291,46 @@
         const TAMPA_CENTER = { lat: 27.9506, lng: -82.4572 };
         let mapsLoaded = false;
         
+        // Add new accessibility markers configuration
+        const ACCESSIBILITY_ISSUES = [
+            {
+                position: { lat: 27.9300, lng: -82.4572 },
+                type: 'door',
+                title: 'Door',
+                description: 'Main entrance door is too narrow for wheelchairs, and nonautomatic',
+                streetViewOverlay: {
+                    width: '50px',
+                    height: '80px',
+                    color: 'rgba(255, 0, 0, 0.3)',
+                    borderColor: '#FF0000'
+                }
+            },
+            {
+                position: { lat: 27.9505, lng: -82.4571 },
+                type: 'parking',
+                title: 'Handicap Parking',
+                description: 'Only one handicap parking space available near Thai Bay',
+                streetViewOverlay: {
+                    width: '100px',
+                    height: '50px',
+                    color: 'rgba(0, 0, 255, 0.3)',
+                    borderColor: '#0000FF'
+                }
+            },
+            {
+                position: { lat: 27.9507, lng: -82.4573 },
+                type: 'ramp',
+                title: 'Ramp',
+                description: 'Ramp access at side entrance',
+                streetViewOverlay: {
+                    width: '60px',
+                    height: '40px',
+                    color: 'rgba(255, 165, 0, 0.3)',
+                    borderColor: '#FFA500'
+                }
+            }
+        ];
+
         // Separate initialization from Maps API callback
         function initializeApp() {
             // Initialize UI elements
@@ -408,9 +448,9 @@
             if (!mapsLoaded || !map) return;
             
             // Update map (left screen)
-            const location = new google.maps.LatLng(placeData.location.lat, placeData.location.lng);
+            const location = placeData.location || TAMPA_CENTER;
             map.setCenter(location);
-            map.setZoom(21);
+            map.setZoom(19);
             marker.position = location;
             
             // Update street view (right screen)
@@ -440,14 +480,56 @@
                 // Hide loading indicator
                 document.getElementById('street-view-loading').classList.add('hidden');
             });
+
+            // Update accessibility markers positions relative to new center
+            ACCESSIBILITY_ISSUES.forEach((issue, index) => {
+                const offset = {
+                    door: { lat: 0.00000, lng: 0.00005 },
+                    parking: { lat: 0.000215, lng: 0.0001059 },
+                    ramp: { lat: 0.000294, lng: 0.00014 }
+                }[issue.type];
+                
+                issue.position = {
+                    lat: location.lat + offset.lat,
+                    lng: location.lng + offset.lng
+                };
+            });
         }
 
         function initMap() {
             try {
+                // Define marker icons here where google is available
+                const MARKER_ICONS = {
+                    door: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#FF4444',
+                        fillOpacity: 0.7,
+                        strokeWeight: 2,
+                        strokeColor: '#FF0000',
+                        scale: 10
+                    },
+                    parking: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#4444FF',
+                        fillOpacity: 0.7,
+                        strokeWeight: 2,
+                        strokeColor: '#0000FF',
+                        scale: 10
+                    },
+                    ramp: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#FF9900',
+                        fillOpacity: 0.7,
+                        strokeWeight: 2,
+                        strokeColor: '#FF6600',
+                        scale: 10
+                    }
+                };
+
                 // Create the map
                 map = new google.maps.Map(document.getElementById('map'), {
-                    center: { lat: 28.0395, lng: -82.6016 },
-                    zoom: 15,
+                    center: TAMPA_CENTER,
+                    zoom: 10,
                     mapTypeId: 'satellite',
                     tilt: 45,
                     mapId: 'YOUR_MAP_ID_HERE'
@@ -463,9 +545,9 @@
                 streetView = new google.maps.StreetViewPanorama(
                     document.getElementById('street-view'),
                     {
-                        position: { lat: 28.0395, lng: -82.6016 },
+                        position: TAMPA_CENTER,
                         pov: { heading: 0, pitch: 0 },
-                        visible: true
+                        zoom: 1
                     }
                 );
                 map.setStreetView(streetView);
@@ -474,13 +556,13 @@
                 if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
                     marker = new google.maps.marker.AdvancedMarkerElement({
                         map,
-                        position: { lat: 28.0395, lng: -82.6016 }
+                        position: TAMPA_CENTER
                     });
                 } else {
                     // Fallback to regular marker if Advanced Marker isn't available
                     marker = new google.maps.Marker({
                         map,
-                        position: { lat: 28.0395, lng: -82.6016 }
+                        position: TAMPA_CENTER
                     });
                 }
                 
@@ -532,6 +614,229 @@
                 // Hide loading indicators
                 document.getElementById('map-loading').classList.add('hidden');
                 document.getElementById('street-view-loading').classList.add('hidden');
+                
+                // Add accessibility markers legend
+                const legend = document.createElement('div');
+                legend.className = 'bg-white p-3 rounded-lg shadow-md';
+                legend.style.margin = '10px';
+                legend.style.padding = '10px';
+                legend.innerHTML = `
+                    <div class="text-sm font-semibold mb-2">Accessibility Notes</div>
+                    <div class="flex items-center mb-1">
+                        <span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                        <span class="text-sm">Door Issue (Nonautomatic)</span>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                        <span class="text-sm">Disability Parking Spots</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>
+                        <span class="text-sm">Accessible Ramp</span>
+                    </div>
+                `;
+                map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+
+                // Add accessibility markers to satellite view (left side)
+                ACCESSIBILITY_ISSUES.forEach(issue => {
+                    const marker = new google.maps.Marker({
+                        position: issue.position,
+                        map: map,
+                        icon: MARKER_ICONS[issue.type],
+                        title: issue.title,
+                        optimized: false
+                    });
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div class="p-2">
+                                <h3 class="font-bold text-red-600">${issue.title}</h3>
+                                <p class="text-sm text-gray-700">${issue.description}</p>
+                            </div>
+                        `
+                    });
+
+                    marker.addListener('click', () => {
+                        infoWindow.open(map, marker);
+                    });
+                });
+
+                // Update the THAI_BAY_ISSUES array with more precise coordinates
+                const THAI_BAY_ISSUES = [
+                    {
+                        position: { lat: 27.916933, lng: -82.773607 }, // Moved further west
+                        type: 'door',
+                        content: 'Door at entrance',
+                        dimensions: {
+                            width: '40px',
+                            height: '80px',
+                            yOffset: 1.05
+                        }
+                    }
+                ];
+
+                // Update the AccessibilityOverlay class
+                class AccessibilityOverlay extends google.maps.OverlayView {
+                    constructor(position, content, type, dimensions) {
+                        super();
+                        this.position = position;
+                        this.content = content;
+                        this.type = type;
+                        this.dimensions = dimensions;
+                        this.div = null;
+                    }
+
+                    onAdd() {
+                        this.div = document.createElement('div');
+                        
+                        // Style the container
+                        Object.assign(this.div.style, {
+                            position: 'absolute',
+                            width: this.dimensions.width,
+                            height: this.dimensions.height,
+                            border: '2px solid #FF0000',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            pointerEvents: 'none',
+                            transformOrigin: '0 0',
+                            zIndex: 1000
+                        });
+
+                        // Create label
+                        const label = document.createElement('div');
+                        Object.assign(label.style, {
+                            position: 'absolute',
+                            top: '-25px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: 'rgba(255, 0, 0, 0.9)',
+                            color: 'white',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            pointerEvents: 'none'
+                        });
+                        label.textContent = this.content;
+                        this.div.appendChild(label);
+
+                        const panes = this.getPanes();
+                        panes.overlayLayer.appendChild(this.div);
+                    }
+
+                    draw() {
+                        const projection = this.getProjection();
+                        if (!projection) return;
+
+                        const position = new google.maps.LatLng(this.position.lat, this.position.lng);
+                        const streetView = this.getMap();
+                        const location = streetView.getPosition();
+                        const pov = streetView.getPov();
+
+                        // Calculate heading and distance
+                        const distance = google.maps.geometry.spherical.computeDistanceBetween(location, position);
+                        const heading = google.maps.geometry.spherical.computeHeading(location, position);
+                        const relativeHeading = ((heading - pov.heading + 540) % 360) - 180; // Normalize to [-180, 180]
+
+                        // Debug information
+                        console.log('Debug Info:', {
+                            'Your Position': {
+                                lat: location.lat().toFixed(6),
+                                lng: location.lng().toFixed(6)
+                            },
+                            'Door Position': {
+                                lat: this.position.lat.toFixed(6),
+                                lng: this.position.lng.toFixed(6)
+                            },
+                            'Distance to door': distance.toFixed(2) + 'm',
+                            'Absolute Heading': heading.toFixed(2) + '°',
+                            'Your heading': pov.heading.toFixed(2) + '°',
+                            'Relative heading': relativeHeading.toFixed(2) + '°',
+                            'Is Visible': Math.abs(relativeHeading) < 60 && distance < 10
+                        });
+/*
+                        // Create debug element if it doesn't exist
+                        if (!this.debugElement) {
+                            this.debugElement = document.createElement('div');
+                            Object.assign(this.debugElement.style, {
+                                position: 'fixed',
+                                top: '10px',
+                                left: '10px',
+                                background: 'rgba(0, 0, 0, 0.8)',
+                                color: 'white',
+                                padding: '10px',
+                                borderRadius: '5px',
+                                fontFamily: 'monospace',
+                                zIndex: 1000,
+                                pointerEvents: 'none'
+                            });
+                            document.body.appendChild(this.debugElement);
+                        }
+
+                        // Update debug display
+                        
+                        this.debugElement.innerHTML = `
+                            <div>Distance: ${distance.toFixed(2)}m</div>
+                            <div>Absolute Heading: ${heading.toFixed(2)}°</div>
+                            <div>Your heading: ${pov.heading.toFixed(2)}°</div>
+                            <div>Relative: ${relativeHeading.toFixed(2)}°</div>
+                            <div>Visible: ${Math.abs(relativeHeading) < 60 && distance < 10}</div>
+                        `;
+*/
+                        // Visibility conditions
+                        if (Math.abs(relativeHeading) > 60 || distance > 10) {
+                            this.div.style.display = 'none';
+                            return;
+                        }
+
+                        // Calculate screen position
+                        const point = projection.fromLatLngToContainerPixel(position);
+                        
+                        // Position and scale the overlay
+                        this.div.style.display = 'block';
+                        
+                        // Adjust vertical position based on pitch and distance
+                        const heightOffset = this.dimensions.yOffset * (window.innerHeight / distance);
+                        const pitchOffset = Math.tan(pov.pitch * Math.PI / 180) * distance * 10;
+                        const adjustedY = point.y - heightOffset + pitchOffset;
+
+                        // Update position and transform
+                        Object.assign(this.div.style, {
+                            left: `${point.x}px`,
+                            top: `${adjustedY}px`,
+                            transform: `translate(-50%, -50%) scale(${Math.max(0.5, Math.min(2, 8 / distance))})`,
+                            opacity: Math.cos((Math.abs(relativeHeading) * Math.PI) / 180)
+                        });
+                    }
+
+                    onRemove() {
+                        if (this.div) {
+                            this.div.parentElement.removeChild(this.div);
+                            this.div = null;
+                        }
+                    }
+                }
+
+                // Update how we create and attach the overlay (in the initMap function)
+                THAI_BAY_ISSUES.forEach(issue => {
+                    const overlay = new AccessibilityOverlay(
+                        issue.position,
+                        issue.content,
+                        issue.type,
+                        issue.dimensions
+                    );
+                    overlay.setMap(streetView);
+                });
+
+                // Add CSS to head for overlay hover effects
+                const style = document.createElement('style');
+                style.textContent = `
+                    .street-view-overlay:hover {
+                        opacity: 0.8;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+                    }
+                `;
+                document.head.appendChild(style);
                 
             } catch (error) {
                 console.error("Error initializing map:", error);

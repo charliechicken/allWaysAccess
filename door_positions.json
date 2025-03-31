@@ -1,0 +1,30 @@
+[
+  {
+    "position": {
+      "lat": 27.917132982817773,
+      "lng": -82.77356570030427
+    },
+    "type": "door",
+    "content": "Pull Door",
+    "restaurant": "Lemon Leaf",
+    "dimensions": {
+      "width": "10px",
+      "height": "120px",
+      "yOffset": 1.5
+    }
+  },
+  {
+    "position": {
+      "lat": 27.917226339550304,
+      "lng": -82.77304392420574
+    },
+    "type": "door",
+    "content": "Pull door",
+    "restaurant": "Artistio Nails & Spa",
+    "dimensions": {
+      "width": "12px",
+      "height": "80px",
+      "yOffset": 1
+    }
+  }
+]

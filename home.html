@@ -8,11 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #34495e;
-            --secondary: #7f8c8d;
-            --accent: #3498db;
-            --background: #f8f9fa;
-            --text: #2c3e50;
+            --primary: #E3F2FD; /* Light blue background */
+            --secondary: #90CAF9; /* Light blue accent */
+            --accent: #1976D2;   /* Medium blue */
+            --background: #FFFFFF;
+            --text: #2C3E50;
+            --mountain-color: #64B5F6;
+            --wheelchair-color: #34495e;
+            --background-color: #FAE0C8;
         }
         
         html {
@@ -24,10 +27,10 @@
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.5;
-            background-color: var(--background);
+            background-color: var(--primary); /* Using the lighter blue */
             color: var(--text);
-            min-height: 100%;
-            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
         }
 
         html, body {
@@ -47,7 +50,7 @@
 
         .content-wrapper {
             position: relative;
-            min-height: 100vh;
+            z-index: 1;
         }
 
         .hero-section {
@@ -83,9 +86,6 @@
             transform: translateZ(0);
         }
 
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -119,46 +119,59 @@
             }
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-            position: absolute;
+        .diagonal-lines {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            opacity: 0.1;
             z-index: -1;
+            pointer-events: none;
         }
 
-        .blob {
+        .diagonal-lines::before,
+        .diagonal-lines::after {
+            content: '';
             position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
+            top: 0;
+            width: 1px;
+            height: 200%;
+            background-color: rgba(0, 0, 0, 0.1);
+            transform-origin: top;
+        }
+
+        .diagonal-lines::before {
+            left: 25%;
+            transform: rotate(45deg);
+        }
+
+        .diagonal-lines::after {
+            right: 25%;
+            transform: rotate(-45deg);
+        }
+
+        .geometric-accent {
+            position: absolute;
+            top: -5%;
+            right: -5%;
+            width: 40%;
+            height: 40%;
+            background-color: #90CAF9; /* Updated to match our color scheme */
+            opacity: 0.1;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
             z-index: -1;
-            animation: blobFloat 20s ease-in-out infinite;
         }
 
-        .blob-1 {
-            background: rgba(52, 152, 219, 0.3);
-            width: 40vw;
-            height: 40vw;
-            top: -10vh;
-            left: -10vw;
-        }
-
-        .blob-2 {
-            background: rgba(46, 204, 113, 0.2);
-            width: 30vw;
-            height: 30vw;
-            bottom: -5vh;
-            right: -5vw;
-        }
-
-        @keyframes blobFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(50px, 50px) scale(1.1); }
-            50% { transform: translate(0, 100px) scale(0.9); }
-            75% { transform: translate(-50px, 50px) scale(1.05); }
+        .geometric-accent-bottom {
+            position: absolute;
+            bottom: -5%;
+            left: -5%;
+            width: 40%;
+            height: 40%;
+            background-color: #64B5F6; /* Light blue complement */
+            opacity: 0.1;
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+            z-index: -1;
         }
 
         .btn {
@@ -212,7 +225,7 @@
         }
 
         .number {
-            background: linear-gradient(135deg, #ff4b1f 0%, #ff9068 100%);
+            background: linear-gradient(135deg, #1976D2 0%, #64B5F6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 5rem;
@@ -253,24 +266,227 @@
                 transform: translateY(-10px) translateX(-50%);
             }
         }
+
+        /* Modern animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Modern typography */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Clean transitions */
+        a {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .animated-background,
+        .wheelchairs,
+        .wheelchair {
+            display: none;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            z-index: 1;
+        }
+
+        .mountain .backdrop {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            clip-path: polygon(0 100%, 50% 0, 100% 100%);
+        }
+
+        .range {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+        }
+
+        .range div {
+            position: absolute;
+            bottom: 0;
+            background: rgba(25, 118, 210, 0.15);
+            clip-path: polygon(0 100%, 50% 0, 100% 100%);
+        }
+
+        .r1 { left: 10%; width: 30%; height: 100%; }
+        .r2 { left: 35%; width: 40%; height: 80%; }
+        .r3 { left: 65%; width: 25%; height: 90%; }
+
+        .disability-filters {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #f8fafc;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem;
+        }
+
+        .filter-option input[type="checkbox"] {
+            accent-color: #1976D2;
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        /* Add background image styling */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('disability.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: right bottom;
+            opacity: 0.1; /* Very light overlay */
+            pointer-events: none; /* Makes sure it doesn't interfere with clicks */
+            z-index: 0;
+        }
+
+        /* Update card backgrounds for better contrast with the new background */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--secondary);
+        }
+
+        /* Update button colors */
+        .btn.bg-blue-600 {
+            background-color: #1976D2;
+        }
+        .btn.bg-blue-600:hover {
+            background-color: #1565C0;
+        }
+        .btn.border-blue-600 {
+            border-color: #1976D2;
+            color: #1976D2;
+        }
+        .btn.border-blue-600:hover {
+            background-color: #E3F2FD;
+        }
+
+        /* Update heading text gradient */
+        .hero-text h1.text-6xl {
+            background-image: linear-gradient(to right, #1976D2, #64B5F6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Update logo text */
+        .logo span {
+            color: #1976D2;
+        }
+
+        /* Update modal buttons */
+        .bg-blue-600 {
+            background-color: #1976D2;
+        }
+        .bg-blue-600:hover {
+            background-color: #1565C0;
+        }
+
+        /* Update the modal styles */
+        #authModal {
+            z-index: 9999; /* Highest z-index to ensure it's above everything */
+        }
+
+        /* Update the modal content container */
+        #authModal > div {
+            position: relative;
+            z-index: 10000; /* Even higher z-index for the modal content */
+            background: white;
+            /* Keep existing styles */
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 28rem;
+            width: 100%;
+        }
+
+        /* Ensure the backdrop is also above other content but below modal */
+        #authModal.bg-black {
+            z-index: 9998;
+        }
     </style>
 </head>
 <body>
+    <div class="animated-background">
+        <div class="wheelchairs front">
+            <!-- Create 6 wheelchair elements in front -->
+            <div class="wheelchair w1">
+                <div class="wheel"></div>
+                <div class="seat"></div>
+            </div>
+            <!-- Repeat for w2 through w6 -->
+        </div>
+        <div class="wheelchairs back">
+            <!-- Create 6 wheelchair elements in back -->
+            <div class="wheelchair w1">
+                <div class="wheel"></div>
+                <div class="seat"></div>
+            </div>
+            <!-- Repeat for w2 through w6 -->
+        </div>
+        <div class="mountain">
+            <div class="backdrop"></div>
+            <div class="range">
+                <!-- Similar to your mountain ranges but simplified -->
+                <div class="r1"></div>
+                <div class="r2"></div>
+                <div class="r3"></div>
+            </div>
+        </div>
+    </div>
+    <div class="diagonal-lines"></div>
     <div class="content-wrapper">
         <div class="parallax-container">
-            <div class="blob blob-1"></div>
-            <div class="blob blob-2"></div>
-            <div class="gradient-bg"></div>
-            
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <header class="mb-8">
-                    <div class="logo mb-4 flex items-center gap-4 floating">
+                    <div class="logo mb-4 flex items-center gap-4 ">
                         <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-16 h-16 object-contain">
                         <span class="text-4xl">AllWaysAccess</span>
                     </div>
                 </header>
 
-                <main class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                <main class="flex flex-col md:flex-row gap-8 items-center justify-center parallax-content">
                     <div class="w-full md:w-1/2 space-y-6 hero-text">
                         <h1 class="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">
                             Experience Places Before You Visit
@@ -346,6 +562,27 @@
                 <form onsubmit="return handleAuth(event, 'signup')">
                     <input type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
                     <input type="password" placeholder="Password" class="w-full p-2 border rounded mb-3">
+                    
+                    <div class="disability-filters">
+                        <p class="text-sm font-semibold mb-2">Filter by Disability Type:</p>
+                        <div class="filter-option">
+                            <input type="checkbox" id="signup-motor" checked>
+                            <label for="signup-motor" class="filter-label">Motor Disability</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="signup-visual">
+                            <label for="signup-visual" class="filter-label">Visual Impairment</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="signup-hearing">
+                            <label for="signup-hearing" class="filter-label">Hearing Impairment</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="signup-cognitive">
+                            <label for="signup-cognitive" class="filter-label">Cognitive Disability</label>
+                        </div>
+                    </div>
+
                     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
                         Create Account
                     </button>
@@ -356,6 +593,27 @@
                 <form onsubmit="return handleAuth(event, 'login')">
                     <input type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
                     <input type="password" placeholder="Password" class="w-full p-2 border rounded mb-3">
+                    
+                    <div class="disability-filters">
+                        <p class="text-sm font-semibold mb-2">Filter by Disability Type:</p>
+                        <div class="filter-option">
+                            <input type="checkbox" id="login-motor" checked>
+                            <label for="login-motor" class="filter-label">Motor Disability</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="login-visual">
+                            <label for="login-visual" class="filter-label">Visual Impairment</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="login-hearing">
+                            <label for="login-hearing" class="filter-label">Hearing Impairment</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="login-cognitive">
+                            <label for="login-cognitive" class="filter-label">Cognitive Disability</label>
+                        </div>
+                    </div>
+
                     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
                         Login
                     </button>
@@ -370,7 +628,11 @@
             document.getElementById('authModal').classList.remove('hidden');
             document.getElementById('signup-form').classList.add('hidden');
             document.getElementById('login-form').classList.add('hidden');
-            document.getElementById(`${type}-form`).classList.remove('hidden');
+            const formElement = document.getElementById(`${type}-form`);
+            formElement.classList.remove('hidden');
+            
+            // Start the demo fill animation
+            demoFill(type);
         }
 
         function hideModal() {
@@ -379,19 +641,60 @@
 
         function handleAuth(event, type) {
             event.preventDefault();
-            // Redirect to the main app page regardless of input
+            // Store the filter preference in localStorage
+            localStorage.setItem('preSelectedLocation', 'Thai Bay');
+            localStorage.setItem('filterActive', 'true');
+            // Redirect to the search page
             window.location.href = 'search.html';
             return false;
         }
 
-        // Add parallax effect
+        // Replace the existing parallax effect code
         document.addEventListener('mousemove', (e) => {
-            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+            const parallaxContent = document.querySelector('.parallax-content');
             
-            document.querySelector('.parallax-content').style.transform = 
-                `translateX(${moveX}px) translateY(${moveY}px)`;
+            if (parallaxContent) {
+                const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+                const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+                
+                requestAnimationFrame(() => {
+                    parallaxContent.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+                });
+            }
         });
+
+        function typeText(element, text, speed = 100) {
+            let index = 0;
+            element.value = '';
+            
+            return new Promise(resolve => {
+                const interval = setInterval(() => {
+                    element.value += text[index];
+                    index++;
+                    
+                    if (index === text.length) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        async function demoFill(type) {
+            const form = document.getElementById(`${type}-form`);
+            const emailInput = form.querySelector('input[type="email"]');
+            const passwordInput = form.querySelector('input[type="password"]');
+            const motorCheckbox = document.getElementById(`${type}-motor`);
+            
+            // First type the email
+            await typeText(emailInput, 'user@allwaysaccess.org', 70);
+            
+            // Then type the password
+            await typeText(passwordInput, 'allwaysaccess', 70);
+            
+            // Ensure motor disability is checked
+            motorCheckbox.checked = true;
+        }
     </script>
 </body>
 </html> 

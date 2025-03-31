@@ -162,7 +162,7 @@
             <div class="logo mb-4 flex items-center gap-4">
                     <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-12 h-12 object-contain">
                 
-                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">AllWaysAccess</span>
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-black">AllWaysAccess</span>
             </div>
         </header>
 
@@ -325,6 +325,30 @@
             const savedPlace = localStorage.getItem('selectedPlace');
             if (savedPlace) {
                 showPlaceDetails(JSON.parse(savedPlace));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if we have a pre-selected location
+            const preSelectedLocation = localStorage.getItem('preSelectedLocation');
+            const filterActive = localStorage.getItem('filterActive');
+            
+            if (preSelectedLocation && filterActive === 'true') {
+                // Find the search input
+                const searchInput = document.querySelector('.search-input');
+                if (searchInput) {
+                    // Set the value to Thai Bay
+                    searchInput.value = preSelectedLocation;
+                    // Trigger the search
+                    const searchEvent = new Event('input', {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    searchInput.dispatchEvent(searchEvent);
+                }
+                
+                // Clear the filter flag (but keep the location)
+                localStorage.setItem('filterActive', 'false');
             }
         });
     </script>

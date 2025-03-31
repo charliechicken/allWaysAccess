@@ -193,7 +193,7 @@
         }
         
         .logo span {
-            background: linear-gradient(to right, #3498db, #2c3e50);
+            background: black;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -210,7 +210,7 @@
             <div class="logo mb-4 flex items-center gap-4">
                     <img src="newLogo.png" alt="AllWaysAccess Logo" class="w-12 h-12 object-contain">
                 
-                <span class="text-2xl font-bold">AllWaysAccess</span>
+                <span class="text-2xl font-bold bg-black">AllWaysAccess</span>
             </div>
             <nav class="flex space-x-4">
                 <a href="search.html" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-all hover:gap-2">
@@ -400,7 +400,7 @@
             
             // Show error message
             const errorMessage = `
-                <div class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                <div class="flex items-center justify-center h-full bg-black rounded-lg">
                     <div class="text-center p-6 max-w-md">
                         <div class="mb-4 text-blue-600">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -415,7 +415,7 @@
                             <li>• Enable the <strong>Street View API</strong></li>
                             <li>• Verify your API key restrictions</li>
                         </ul>
-                        <button id="retry-maps" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300 shadow-md">
+                        <button id="retry-maps" class="px-4 py-2 bg-black text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300 shadow-md">
                             Retry Loading Maps
                         </button>
                     </div>
@@ -661,16 +661,37 @@
                     });
                 });
 
-                // Update the THAI_BAY_ISSUES array with more precise coordinates
+                // Update the THAI_BAY_ISSUES array with adjusted parking position
                 const THAI_BAY_ISSUES = [
                     {
-                        position: { lat: 27.916933, lng: -82.773607 }, // Moved further west
+                        position: { lat: 27.916933, lng: -82.773607 }, // Door position
                         type: 'door',
                         content: 'Door at entrance',
                         dimensions: {
                             width: '40px',
                             height: '80px',
-                            yOffset: .65
+                            yOffset: .95
+                        }
+                    },
+                    {
+                        position: { lat: 27.917152846453164, lng: -82.77365803562699 }, // Moved further west and up
+                        type: 'parking',
+                        content: 'Handicap Parking',
+                        dimensions: {
+                            width: '60px',
+                            height: '40px',
+                            yOffset: 1, // Raised to be more visible
+                        }
+                    },
+                    {
+                        position: { lat: 27.917232846453164, lng: -82.77356503562699 }, // Ramp position
+                        type: 'ramp',
+                        content: 'Access Ramp',
+                        dimensions: {
+                            width: '60px',
+                            height: '40px',
+                            yOffset: 0.1,
+                            transform: 'perspective(500px) rotateX(60deg)'
                         }
                     }
                 ];
@@ -689,16 +710,24 @@
                     onAdd() {
                         this.div = document.createElement('div');
                         
+                        // Define colors based on type
+                        const colors = {
+                            door: { border: '#FF0000', bg: 'rgba(255, 0, 0, 0.2)' },
+                            parking: { border: '#0000FF', bg: 'rgba(0, 0, 255, 0.3)' }, // Increased opacity
+                            ramp: { border: '#FFA500', bg: 'rgba(255, 165, 0, 0.3)' }  // Increased opacity
+                        };
+                        
                         // Style the container
                         Object.assign(this.div.style, {
                             position: 'absolute',
                             width: this.dimensions.width,
                             height: this.dimensions.height,
-                            border: '2px solid #FF0000',
-                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            border: `2px solid ${colors[this.type].border}`,
+                            backgroundColor: colors[this.type].bg,
                             pointerEvents: 'none',
-                            transformOrigin: '0 0',
-                            zIndex: 1000
+                            transformOrigin: 'center center', // Changed from '0 0'
+                            zIndex: this.type === 'door' ? 1000 : 999, // Door above ground markers
+                            boxShadow: this.type !== 'door' ? '0 0 10px rgba(0,0,0,0.3)' : 'none' // Add shadow to ground markers
                         });
 
                         // Create label
@@ -708,7 +737,7 @@
                             top: '-25px',
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            backgroundColor: 'rgba(255, 0, 0, 0.9)',
+                            backgroundColor: colors[this.type].border,
                             color: 'white',
                             padding: '3px 8px',
                             borderRadius: '4px',
@@ -736,76 +765,62 @@
                         // Calculate heading and distance
                         const distance = google.maps.geometry.spherical.computeDistanceBetween(location, position);
                         const heading = google.maps.geometry.spherical.computeHeading(location, position);
-                        const relativeHeading = ((heading - pov.heading + 540) % 360) - 180; // Normalize to [-180, 180]
-
-                        // Debug information
-                        console.log('Debug Info:', {
-                            'Your Position': {
-                                lat: location.lat().toFixed(6),
-                                lng: location.lng().toFixed(6)
-                            },
-                            'Door Position': {
-                                lat: this.position.lat.toFixed(6),
-                                lng: this.position.lng.toFixed(6)
-                            },
-                            'Distance to door': distance.toFixed(2) + 'm',
-                            'Absolute Heading': heading.toFixed(2) + '°',
-                            'Your heading': pov.heading.toFixed(2) + '°',
-                            'Relative heading': relativeHeading.toFixed(2) + '°',
-                            'Is Visible': Math.abs(relativeHeading) < 60 && distance < 10
-                        });
-/*
-                        // Create debug element if it doesn't exist
-                        if (!this.debugElement) {
-                            this.debugElement = document.createElement('div');
-                            Object.assign(this.debugElement.style, {
-                                position: 'fixed',
-                                top: '10px',
-                                left: '10px',
-                                background: 'rgba(0, 0, 0, 0.8)',
-                                color: 'white',
-                                padding: '10px',
-                                borderRadius: '5px',
-                                fontFamily: 'monospace',
-                                zIndex: 1000,
-                                pointerEvents: 'none'
-                            });
-                            document.body.appendChild(this.debugElement);
-                        }
-
-                        // Update debug display
-                        
-                        this.debugElement.innerHTML = `
-                            <div>Distance: ${distance.toFixed(2)}m</div>
-                            <div>Absolute Heading: ${heading.toFixed(2)}°</div>
-                            <div>Your heading: ${pov.heading.toFixed(2)}°</div>
-                            <div>Relative: ${relativeHeading.toFixed(2)}°</div>
-                            <div>Visible: ${Math.abs(relativeHeading) < 60 && distance < 10}</div>
-                        `;
-*/
-                        // Visibility conditions
-                        if (Math.abs(relativeHeading) > 60 || distance > 10) {
-                            this.div.style.display = 'none';
-                            return;
-                        }
+                        const relativeHeading = ((heading - pov.heading + 540) % 360) - 180;
 
                         // Calculate screen position
                         const point = projection.fromLatLngToContainerPixel(position);
                         
-                        // Position and scale the overlay
+                        // Visibility conditions based on type and location
+                        if (this.type === 'door') {
+                            // Door disappears when more than 8 meters away (reduced from 15)
+                            if (distance > 8) {
+                                this.div.style.display = 'none';
+                                return;
+                            }
+                        } else if (this.type === 'parking' || this.type === 'ramp') {
+                            // Parking and ramp only appear when within 20 meters of their specific location
+                            // and when near the coordinates 27.917132846453164, -82.77352503562699
+                            const targetLocation = new google.maps.LatLng(27.917132846453164, -82.77352503562699);
+                            const distanceToTarget = google.maps.geometry.spherical.computeDistanceBetween(location, targetLocation);
+                            
+                            if (distanceToTarget > 20 || distance > 20) {
+                                this.div.style.display = 'none';
+                                return;
+                            }
+                        }
+
                         this.div.style.display = 'block';
                         
-                        // Adjust vertical position based on pitch and distance
-                        const heightOffset = this.dimensions.yOffset * (window.innerHeight / distance);
-                        const pitchOffset = Math.tan(pov.pitch * Math.PI / 180) * distance * 10;
+                        // Adjust position and scale based on type
+                        let transform = '';
+                        let yOffset = this.dimensions.yOffset;
+                        
+                        if (this.type === 'ramp') { // Changed from parking || ramp
+                            transform = `
+                                translate(-50%, -50%) 
+                                scale(${Math.max(0.5, Math.min(2, 8 / distance))})
+                                rotateX(60deg)
+                                perspective(500px)
+                            `;
+                            yOffset = 0.1;
+                        } else {
+                            transform = `
+                                translate(-50%, -50%) 
+                                scale(${Math.max(0.5, Math.min(2, 8 / distance))})
+                            `;
+                        }
+
+                        // Adjust vertical position based on pitch and distance with reduced sensitivity
+                        const heightOffset = yOffset * (window.innerHeight / Math.max(distance, 1));
+                        const pitchOffset = Math.tan(pov.pitch * Math.PI / 180) * distance * 0.5; // Reduced from 10 to 2
                         const adjustedY = point.y - heightOffset + pitchOffset;
 
                         // Update position and transform
                         Object.assign(this.div.style, {
                             left: `${point.x}px`,
                             top: `${adjustedY}px`,
-                            transform: `translate(-50%, -50%) scale(${Math.max(0.5, Math.min(2, 8 / distance))})`,
-                            opacity: Math.cos((Math.abs(relativeHeading) * Math.PI) / 180)
+                            transform: transform,
+                            opacity: Math.max(0.4, Math.cos((Math.abs(relativeHeading) * Math.PI) / 180))
                         });
                     }
 
